@@ -79,16 +79,45 @@ export async function register(req: Request, res: Response) {
 
   await main()
     .then(async (response) => {
-      await prisma.$disconnect();
+      // await prisma.$disconnect();
+      const tokens = await generateTokens({
+        id: response.id,
+        email: response.email,
+        name: response.name,
+        role: response.role,
+      });
       console.log(response);
+      res
+        .cookie("access_token", tokens.accessToken, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "strict",
+          maxAge: accessCookieMaxAge,
+        })
+        .cookie("refresh_token", tokens.refreshToken, {
+          httpOnly: true,
+          secure: true,
+          sameSite: "strict",
+          maxAge: refreshCookieMaxAge,
+        })
+        .status(200)
+        .json({
+          message: "Registered : " + JSON.stringify(response),
+          ...tokens,
+          authStatus: "authenticated",
+          user: {
+            email: response.email,
+            name: response.name,
+            id: response.id,
+          },
+        });
     })
     .catch(async (e) => {
       console.error(e);
-      await prisma.$disconnect();
-      process.exit(1);
+      // await prisma.$disconnect();
+      res.status(500).json({ message: "Failed to register" });
+      return;
     });
-
-  res.send("Registered : " + JSON.stringify({ name, email, hashedPassword }));
 }
 
 export function logout(req: Request, res: Response) {
@@ -96,7 +125,11 @@ export function logout(req: Request, res: Response) {
     .clearCookie("access_token")
     .clearCookie("refresh_token")
     .status(200)
-    .send("Logout Successful");
+    .send({
+      message: "Logout Successful",
+      authStatus: "unauthenticated",
+    });
+  return;
 }
 
 export async function refresh(req: Request, res: Response) {
@@ -116,7 +149,7 @@ export async function refresh(req: Request, res: Response) {
     };
     const { accessToken } = await generateTokens({ id, name, email, role });
 
-    res
+    res.status(200)
       .cookie("access_token", accessToken, {
         httpOnly: true,
         secure: true,
@@ -129,7 +162,7 @@ export async function refresh(req: Request, res: Response) {
         authStatus: "authenticated",
       });
   } catch (err) {
-    res.sendStatus(403);
+    res.sendStatus(401);
     return;
   }
 }
