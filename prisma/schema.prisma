@@ -14,9 +14,90 @@ datasource db {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-  password String
-  role String @default("Admin")
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String
+  role      String   @default("Admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Workspace relations
+  ownedWorkspaces Workspace[]       @relation("OwnedWorkspaces")
+  memberships     WorkspaceMember[]
+
+  isVerified Boolean   @default(false)
+  lastLogin  DateTime?
+
+  // Task relations
+  assignedTasks Task[] @relation("AssignedTasks")
+  Project    Project[]
+  Task       Task[]
+}
+
+model Workspace {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  ownerId  String
+  owner    User              @relation("OwnedWorkspaces", fields: [ownerId], references: [id])
+  members  WorkspaceMember[]
+  projects Project[]
+}
+
+model WorkspaceMember {
+  id        String   @id @default(cuid())
+  role      String   @default("member") // e.g., admin, viewer, etc.
+  invitedAt DateTime @default(now())
+  accepted  Boolean  @default(false)
+
+  // Relations
+  userId      String
+  workspaceId String
+  user        User      @relation(fields: [userId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  status      String    @default("active") // "active", "archived", "completed", etc.
+  deadline    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Foreign keys
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  workspaceId String
+
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdById String
+
+  // One-to-many relation
+  tasks Task[] // you'll define this model later
+}
+
+model Task {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  status      String    @default("todo") // "todo", "in-progress", "done", etc.
+  priority    String    @default("medium") // "low", "medium", "high", "critical"
+  dueDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId String
+
+  createdBy   User   @relation(fields: [createdById], references: [id])
+  createdById String
+
+  assignees User[] @relation("AssignedTasks")
 }

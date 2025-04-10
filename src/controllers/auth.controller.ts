@@ -31,6 +31,7 @@ export function login(req: Request, res: Response) {
       email: user.email,
       name: user.name,
       role: user.role,
+      lastLogin: new Date().toISOString(),
     });
     // save the refresh token to db - task
     return res
@@ -85,6 +86,7 @@ export async function register(req: Request, res: Response) {
         email: response.email,
         name: response.name,
         role: response.role,
+        lastLogin: new Date().toISOString(),
       });
       console.log(response);
       res
@@ -141,15 +143,23 @@ export async function refresh(req: Request, res: Response) {
   try {
     // validate access token here - task
     const decoded = jwt.verify(token, jwtSecret.refreshToken);
-    const { id, email, name, role } = decoded as {
-      id: number;
+    const { id, email, name, role, lastLogin } = decoded as {
+      id: string;
       email: string;
       name: string;
       role: string;
+      lastLogin: string;
     };
-    const { accessToken } = await generateTokens({ id, name, email, role });
+    const { accessToken } = await generateTokens({
+      id,
+      name,
+      email,
+      role,
+      lastLogin,
+    });
 
-    res.status(200)
+    res
+      .status(200)
       .cookie("access_token", accessToken, {
         httpOnly: true,
         secure: true,
@@ -176,7 +186,7 @@ export async function me(req: Request, res: Response) {
   try {
     const decoded = jwt.verify(token, jwtSecret.accessToken);
     const { id, email, name, role } = decoded as {
-      id: number;
+      id: string;
       email: string;
       name: string;
       role: string;
@@ -201,7 +211,7 @@ export async function me(req: Request, res: Response) {
     });
     return;
   } catch (err) {
-    res.sendStatus(403);
+    res.sendStatus(401);
     return;
   }
 }
