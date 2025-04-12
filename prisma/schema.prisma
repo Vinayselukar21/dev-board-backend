@@ -47,6 +47,7 @@ model Workspace {
   owner    User              @relation("OwnedWorkspaces", fields: [ownerId], references: [id])
   members  WorkspaceMember[]
   projects Project[]
+  departments Department[]
 }
 
 model WorkspaceMember {
@@ -60,7 +61,25 @@ model WorkspaceMember {
   workspaceId String
   user        User      @relation(fields: [userId], references: [id])
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  departmentId String
+  department  Department @relation("MemberDepartment",fields: [departmentId], references: [id])
+  projects     ProjectMember[]
+  // add workspace member designation
 }
+
+model ProjectMember {
+  id              String           @id @default(cuid())
+  projectId       String
+  memberId        String
+
+  project         Project          @relation(fields: [projectId], references: [id])
+  member          WorkspaceMember @relation(fields: [memberId], references: [id])
+
+  assignedAt      DateTime         @default(now())
+
+  @@unique([projectId, memberId]) // Optional: Prevent duplicate entries
+}
+
 
 model Project {
   id          String    @id @default(cuid())
@@ -79,7 +98,22 @@ model Project {
   createdById String
 
   // One-to-many relation
-  tasks Task[] // you'll define this model later
+  tasks Task[] @relation("TaskProject")
+  taskStages TaskStage[] @relation("ProjectTaskStages")
+
+  members     ProjectMember[]
+}
+
+model TaskStage {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  projectId String
+  project   Project  @relation("ProjectTaskStages",fields: [projectId], references: [id])
+  tasks Task[] @relation("TaskStages")
 }
 
 model Task {
@@ -93,11 +127,24 @@ model Task {
   updatedAt   DateTime  @updatedAt
 
   // Relations
-  project   Project @relation(fields: [projectId], references: [id])
   projectId String
+  project   Project  @relation("TaskProject",fields: [projectId], references: [id])
+
+  stageId String
+  stage TaskStage @relation("TaskStages",fields: [stageId], references: [id])
 
   createdBy   User   @relation(fields: [createdById], references: [id])
   createdById String
 
   assignees User[] @relation("AssignedTasks")
+}
+
+model Department {
+  id        String   @id @default(cuid())
+  workspaceId String
+  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  members   WorkspaceMember[] @relation("MemberDepartment")
 }

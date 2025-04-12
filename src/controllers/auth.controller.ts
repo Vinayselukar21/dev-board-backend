@@ -64,15 +64,16 @@ export function login(req: Request, res: Response) {
 }
 
 export async function register(req: Request, res: Response) {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
   const hashedPassword = await hashPassword(password);
 
   async function main() {
     const user = await prisma.user.create({
       data: {
-        name: name,
-        email: email,
+        name,
+        email,
         password: hashedPassword,
+        role,
       },
     });
     return user;

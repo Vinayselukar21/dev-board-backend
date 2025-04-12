@@ -7,9 +7,9 @@ import express from "express";
 import verifyAccessToken from "./middlewares/verifyAccessToken";
 import authRoutes from "./routes/auth.routes";
 import workspaceRoutes from "./routes/workspace.routes";
+import projectRoutes from "./routes/project.routes";
 
 export const prisma = new PrismaClient().$extends(withAccelerate());
-
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -18,9 +18,8 @@ export const jwtSecret = {
   refreshToken: process.env.REFRESH_TOKEN_SECRET || "",
 };
 
-process.on('uncaughtException', console.error);
-process.on('unhandledRejection', console.error);
-
+process.on("uncaughtException", console.error);
+process.on("unhandledRejection", console.error);
 
 app.use(express.json());
 app.use(cookieParser());
@@ -37,6 +36,7 @@ app.get("/", verifyAccessToken, (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/workspace", workspaceRoutes);
+app.use("/api/projects", projectRoutes);
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
