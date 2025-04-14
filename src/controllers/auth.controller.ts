@@ -138,7 +138,7 @@ export function logout(req: Request, res: Response) {
 export async function refresh(req: Request, res: Response) {
   const token = req.cookies.refresh_token;
   if (!token) {
-    res.sendStatus(401);
+    res.sendStatus(403);
     return;
   }
   try {
@@ -173,7 +173,7 @@ export async function refresh(req: Request, res: Response) {
         authStatus: "authenticated",
       });
   } catch (err) {
-    res.sendStatus(401);
+    res.sendStatus(403);
     return;
   }
 }

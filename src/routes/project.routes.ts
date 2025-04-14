@@ -5,10 +5,16 @@ import {
   addMemberToProject,
   createTaskStage,
   createTask,
-  getAllTasksForProject
+  getAllTasksForProject,
+  getProjectById,
+  changeTaskStage,
+  deleteTask
 } from "../controllers/project.controllers";
 
 const router = Router();
+
+// Get project details by id 
+router.get("/getbyid/:projectId", verifyAccessToken, getProjectById); // fetch a project by id 
 
 // Project Routes
 router.post("/addmember", verifyAccessToken, addMemberToProject);
@@ -20,8 +26,9 @@ router.post("/newstage", verifyAccessToken, createTaskStage);
 // Project Tasks Routes
 router.post("/newtask", verifyAccessToken, createTask);
 router.get("/:projectId/tasks", verifyAccessToken, getAllTasksForProject);
+router.put("/taskstagechange", verifyAccessToken, changeTaskStage);
 // router.get("/:id/task/:taskId", verifyAccessToken, getTask);
 // router.put("/:id/task/:taskId", verifyAccessToken, updateTask);
-// router.delete("/:id/task/:taskId", verifyAccessToken, deleteTask);
+router.delete("/task/delete/:taskId", verifyAccessToken, deleteTask);
 
 export default router;

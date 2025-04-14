@@ -50,6 +50,15 @@ export interface WorkspaceMember {
   workspace: Workspace;
 }
 
+export interface ProjectMember {
+  id: string;
+  projectId: string;
+  memberId: string;
+  project: Project;
+  member: WorkspaceMember;
+  assignedAt: string;
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -63,6 +72,7 @@ export interface Project {
   createdById: string;
   createdBy: User;
   tasks: Task[];
+  members: Array<string>;
 }
 
 export interface Task {

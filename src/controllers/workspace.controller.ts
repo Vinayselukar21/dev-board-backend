@@ -39,14 +39,18 @@ export async function deleteWorkspace(req: Request, res: Response) {
 }
 
 export async function getWorkspaces(req: Request, res: Response) {
-  const { id } = req.params;
+  const { ownerId } = req.params;
   async function getWorkspaces() {
     const workspaces = await prisma.workspace.findMany({
       where: {
-        ownerId: id,
+        ownerId: ownerId,
       },
       include: {
-        members: true,
+        members: {
+          include: {
+            user: true,
+          },
+        },
         projects: true,
         departments: true,
       },
@@ -69,11 +73,11 @@ export async function getWorkspaces(req: Request, res: Response) {
 }
 
 export async function getWorkspaceById(req: Request, res: Response) {
-  const { id } = req.params;
+  const { workspaceId } = req.params;
   async function getWorkspaceById() {
     const workspace = await prisma.workspace.findUnique({
       where: {
-        id: id,
+        id: workspaceId,
       },
     });
     return workspace;
@@ -94,8 +98,15 @@ export async function getWorkspaceById(req: Request, res: Response) {
 }
 
 export async function createProject(req: Request, res: Response) {
-  const { name, description, status, deadline, workspaceId, createdById } =
-    req.body as Project;
+  const {
+    name,
+    description,
+    status,
+    deadline,
+    workspaceId,
+    createdById,
+    members,
+  } = req.body as Project;
   async function createProject() {
     const project = await prisma.project.create({
       data: {
@@ -105,6 +116,16 @@ export async function createProject(req: Request, res: Response) {
         deadline,
         workspaceId,
         createdById,
+        members: members
+          ? {
+              create: members.map((memberId: string) => ({
+                memberId: memberId,
+              })),
+            }
+          : undefined,
+      },
+      include: {
+        members: true,
       },
     });
     return project;
@@ -125,11 +146,11 @@ export async function createProject(req: Request, res: Response) {
 }
 
 export async function getWorkspaceProjects(req: Request, res: Response) {
-  const { id } = req.params;
+  const { workspaceId } = req.params;
   async function getWorkspaceProjects() {
     const projects = await prisma.project.findMany({
       where: {
-        workspaceId: id,
+        workspaceId: workspaceId,
       },
     });
     return projects;
@@ -150,13 +171,13 @@ export async function getWorkspaceProjects(req: Request, res: Response) {
 }
 
 export async function addWorkspaceMember(req: Request, res: Response) {
-  const { id } = req.params;
+  const { workspaceId } = req.params;
   const { userId, role, departmentId } = req.body;
   async function addWorkspaceMember() {
     const workspaceMember = await prisma.workspaceMember.create({
       data: {
         userId,
-        workspaceId: id,
+        workspaceId: workspaceId,
         role,
         departmentId,
       },
@@ -179,11 +200,11 @@ export async function addWorkspaceMember(req: Request, res: Response) {
 }
 
 export async function getWorkspaceMembers(req: Request, res: Response) {
-  const { id } = req.params;
+  const { workspaceId } = req.params;
   async function getWorkspaceMembers() {
     const members = await prisma.workspaceMember.findMany({
       where: {
-        workspaceId: id,
+        workspaceId: workspaceId,
       },
       include: {
         user: true,
@@ -240,11 +261,11 @@ export async function createDepartment(req: Request, res: Response) {
 }
 
 export async function getDepartments(req: Request, res: Response) {
-  const { id } = req.params;
+  const { workspaceId } = req.params;
   async function getDepartments() {
     const departments = await prisma.department.findMany({
       where: {
-        workspaceId: id,
+        workspaceId: workspaceId,
       },
     });
     return departments;

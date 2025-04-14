@@ -1,5 +1,46 @@
 import { Request, Response } from "express";
 import { prisma } from "../index";
+// PROJECT ----------------------------------------------------------------------------------------------
+export async function getProjectById(req: Request, res: Response) {
+  const { projectId } = req.params;
+  async function getProjectById() {
+    const project = await prisma.project.findUnique({
+      where: {
+        id: projectId,
+      },
+      include: {
+        taskStages: {
+          include: {
+            tasks: true,
+          },
+        },
+        members: {
+          include:{
+            member: {
+              include:{
+                user: true
+              }
+            }
+          }
+        },
+      },
+    });
+    return project;
+  }
+
+  try {
+    const project = await getProjectById();
+    res.status(200).json({
+      message: "Project found successfully",
+      project,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to get project by id",
+    });
+  }
+}
 
 // MEMBER RELATED //-------------------------------------------------------------------------------------
 export async function addMemberToProject(req: Request, res: Response) {
@@ -124,5 +165,61 @@ export async function getAllTasksForProject(req: Request, res: Response) {
     res.status(500).json({
       message: "Failed to get tasks by stage",
     });
+  }
+}
+
+export async function changeTaskStage(req: Request, res: Response){
+  const { taskId, stageId } = req.body;
+  async function changeTaskStage() {
+    const task = await prisma.task.update({
+      where: {
+        id: taskId,
+      },
+      data: {
+        stageId,
+      },
+    });
+    return task;
+  }
+
+  try {
+    const task = await changeTaskStage();
+    res.status(200).json({
+      message: "Task stage changed successfully",
+      task,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to change task stage",
+    });
+  }
+}
+
+export async function deleteTask(req: Request, res: Response) {
+  const { taskId } = req.params;
+
+  async function deleteTask() {
+    const task = await prisma.task.delete({
+      where: {
+        id: taskId,
+      },
+    });
+    return task;
+  }
+
+  try {
+    const task = await deleteTask();
+    res.status(200)
+      .json({
+        message: "Task deleted successfully",
+        task,
+      });
+  } catch (error) {
+    console.error(error);
+    res.status(500)
+      .json({
+        message: "Failed to delete task",
+      });
   }
 }
