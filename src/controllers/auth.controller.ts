@@ -13,6 +13,9 @@ export function login(req: Request, res: Response) {
       where: {
         email: email,
       },
+      include: {
+        memberships: true,
+      },
     });
     return user;
   }
@@ -56,6 +59,7 @@ export function login(req: Request, res: Response) {
           email: user.email,
           name: user.name,
           id: user.id,
+          memberships: user.memberships,
         },
       });
   }
@@ -196,6 +200,9 @@ export async function me(req: Request, res: Response) {
       where: {
         email: email,
       },
+      include: {
+        memberships: true,
+      },
     });
     if (!user) {
       res.status(404).json({ message: "User not found" });
@@ -207,6 +214,7 @@ export async function me(req: Request, res: Response) {
         email: user.email,
         name: user.name,
         id: user.id,
+        memberships: user.memberships,
       },
       authStatus: "authenticated",
     });

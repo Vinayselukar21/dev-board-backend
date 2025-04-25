@@ -62,17 +62,17 @@ export interface ProjectMember {
 export interface Project {
   id: string;
   name: string;
-  description?: string;
+  description?: string | null;
   status: string;
-  deadline?: string;
-  createdAt: string;
-  updatedAt: string;
+  deadline?: Date | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
   workspaceId: string;
-  workspace: Workspace;
+  workspace?: Workspace;
   createdById: string;
-  createdBy: User;
-  tasks: Task[];
-  members: Array<string>;
+  createdBy?: User;
+  tasks?: Task[];
+  members?: Array<string>;
 }
 
 export interface Task {

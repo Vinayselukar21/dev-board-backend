@@ -31,7 +31,7 @@ app.use(
 );
 
 app.get("/", verifyAccessToken, (req, res) => {
-  res.send("Hello TypeScript + Express!");
+  res.send("Up and Running!");
 });
 
 app.use("/api/auth", authRoutes);

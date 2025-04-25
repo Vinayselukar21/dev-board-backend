@@ -2,6 +2,128 @@ import { Request, Response } from "express";
 import { prisma } from "../index";
 import { Project, Workspace } from "../types";
 import { WorkspaceMember } from "@prisma/client";
+import { hashPassword } from "../utils/hash";
+
+export async function workspaceDashboard(req: Request, res: Response) {
+  const { workspaceId } = req.params;
+  async function workspaceDashboard() {
+    const workspace = await prisma.workspace.findUnique({
+      where: {
+        id: workspaceId,
+      },
+      include: {
+        members: {
+          include: {
+            user: true,
+            department: true,
+          },
+        },
+        owner: true,
+        projects: {
+          include: {
+            tasks: {
+              include: {
+                stage: true,
+              },
+            },
+            taskStages: {
+              include: {
+                tasks: true,
+              },
+            },
+          },
+        },
+        departments: true,
+      },
+    });
+    return workspace;
+  }
+
+  try {
+    const workspace = await workspaceDashboard();
+
+    const getProjectProgress = (project: any) => {
+      const totalTasks = project.tasks.length;
+      let taskStatusCount: { [key: string]: number } = {};
+
+      totalTasks &&
+        project.tasks.forEach((task: any) => {
+          const status = task.stage.name;
+          taskStatusCount[status] = (taskStatusCount[status] || 0) + 1;
+        });
+
+      const completedTasks = taskStatusCount["Done"] || 0;
+      return {
+        totalTasks: totalTasks || 0,
+        percentage: ((completedTasks / totalTasks) * 100 || 0).toFixed(1),
+        taskStatusCount,
+      };
+    };
+
+    const dashboardObject = {
+      projectCard: {
+        count: workspace
+          ? workspace.projects
+            ? workspace.projects.length
+            : 0
+          : 0,
+      },
+
+      taskCard: {
+        completedTaskCount: workspace
+          ? workspace.projects
+            ? workspace.projects
+                .map(
+                  (project) =>
+                    project.tasks.filter((task) => task.stage.name === "Done")
+                      .length
+                )
+                .reduce((a, b) => a + b, 0)
+            : 0
+          : 0,
+        totalTaskCount: workspace
+          ? workspace.projects
+            ? workspace.projects
+                .map((project) => project.tasks.length)
+                .reduce((a, b) => a + b, 0)
+            : 0
+          : 0,
+      },
+
+      teamCard: {
+        count: workspace
+          ? workspace.members
+            ? workspace.members.length
+            : 0
+          : 0,
+      },
+
+      projectProgressCard: workspace
+        ? workspace.projects
+          ? workspace.projects.map((project) => {
+              return {
+                id: project.id,
+                name: project.name,
+                progress: getProjectProgress(project),
+              };
+            })
+          : []
+        : [],
+
+      taskDistributionCard: {},
+    };
+    res.status(200).json({
+      message: "Workspace dashboard found successfully",
+      dashboard: dashboardObject,
+      workspace,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to get workspace dashboard",
+    });
+  }
+}
 
 export async function createWorkspace(req: Request, res: Response) {
   const { name, description, ownerId } = req.body as Workspace;
@@ -199,6 +321,43 @@ export async function addWorkspaceMember(req: Request, res: Response) {
   }
 }
 
+export async function registerAndAddMember(req: Request, res: Response) {
+  const { name, email, password, role, workspaceId, departmentId } = req.body;
+  const hashedPassword = await hashPassword(password);
+
+  async function registerAndAddMember() {
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        role: "User",
+        memberships: {
+          create: {
+            workspaceId,
+            role,
+            departmentId,
+          },
+        },
+      },
+    });
+    return user;
+  }
+
+  try {
+    const user = await registerAndAddMember();
+    res.status(200).json({
+      message: "User registered and added to workspace successfully",
+      user,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to register and add user to workspace",
+    });
+  }
+}
+
 export async function getWorkspaceMembers(req: Request, res: Response) {
   const { workspaceId } = req.params;
   async function getWorkspaceMembers() {
@@ -230,6 +389,41 @@ export async function getWorkspaceMembers(req: Request, res: Response) {
     console.error(error);
     res.status(500).json({
       message: "Failed to get workspace members",
+    });
+  }
+}
+
+export async function getWorkspaceMemberById(req: Request, res: Response) {
+  const { workspaceId, memberId } = req.params;
+  async function getMember() {
+    const workspaceMember = await prisma.workspaceMember.findUnique({
+      where: {
+        id: memberId,
+        workspaceId: workspaceId,
+      },
+      include: {
+        user: true,
+        department: true,
+        projects: {
+          include: {
+            project: true,
+          },
+        },
+      },
+    });
+    return workspaceMember;
+  }
+
+  try {
+    const workspaceMember = await getMember();
+    res.status(200).json({
+      message: "Workspace member found successfully",
+      workspaceMember,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to get workspace member by id",
     });
   }
 }
