@@ -68,7 +68,7 @@ export function login(req: Request, res: Response) {
 }
 
 export async function register(req: Request, res: Response) {
-  const { name, email, password, role } = req.body;
+  const { name, email, password, role, contactNo, location } = req.body;
   const hashedPassword = await hashPassword(password);
 
   async function main() {
@@ -76,6 +76,8 @@ export async function register(req: Request, res: Response) {
       data: {
         name,
         email,
+        contactNo,
+        location,
         password: hashedPassword,
         role,
       },

@@ -8,6 +8,8 @@ export interface User {
   updatedAt: string;
   isVerified: boolean;
   lastLogin?: string;
+  contactNo?: string;
+  location?: string;
   ownedWorkspaces: Workspace[];
   memberships: WorkspaceMember[];
   assignedTasks: Task[];

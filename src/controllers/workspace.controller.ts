@@ -322,7 +322,7 @@ export async function addWorkspaceMember(req: Request, res: Response) {
 }
 
 export async function registerAndAddMember(req: Request, res: Response) {
-  const { name, email, password, role, workspaceId, departmentId } = req.body;
+  const { name, email, password, role, workspaceId, departmentId, contactNo, location } = req.body;
   const hashedPassword = await hashPassword(password);
 
   async function registerAndAddMember() {
@@ -331,7 +331,9 @@ export async function registerAndAddMember(req: Request, res: Response) {
         name,
         email,
         password: hashedPassword,
-        role: "User",
+        role: "user",
+        contactNo,
+        location,
         memberships: {
           create: {
             workspaceId,

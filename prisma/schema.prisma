@@ -18,9 +18,11 @@ model User {
   email     String   @unique
   name      String?
   password  String
-  role      String   @default("Admin")
+  role      String   @default("admin")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  contactNo  String @db.VarChar(20) @default("")
+  location String? @db.VarChar(255) @default("")
 
   // Workspace relations
   ownedWorkspaces Workspace[]       @relation("OwnedWorkspaces")
@@ -55,6 +57,8 @@ model WorkspaceMember {
   role      String   @default("member") // e.g., admin, viewer, etc.
   invitedAt DateTime @default(now())
   accepted  Boolean  @default(false)
+  jobTitle  String   @default("")
+  
 
   // Relations
   userId      String
