@@ -8,10 +8,14 @@ import {
   getAllTasksForProject,
   getProjectById,
   changeTaskStage,
-  deleteTask
+  deleteTask,
+  getProjectLogs
 } from "../controllers/project.controllers";
 
 const router = Router();
+
+// Get project logs
+router.get("/:workspaceId/logs", verifyAccessToken, getProjectLogs);
 
 // Get project details by id 
 router.get("/getbyid/:projectId", verifyAccessToken, getProjectById); // fetch a project by id 

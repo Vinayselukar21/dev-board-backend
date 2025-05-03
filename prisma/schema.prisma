@@ -157,7 +157,7 @@ model Department {
 
 model Log {
   id        String   @id @default(cuid())
-  type      String   @default("workspace")  
+  type      String   @default("workspace")   // workspace, project, task
   action    String   @default("create")
   message   String
 

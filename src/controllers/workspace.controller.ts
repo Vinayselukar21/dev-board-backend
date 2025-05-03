@@ -34,6 +34,12 @@ export async function workspaceDashboard(req: Request, res: Response) {
           },
         },
         departments: true,
+        logs: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+          take: 50,
+        },
       },
     });
     return workspace;
@@ -111,6 +117,8 @@ export async function workspaceDashboard(req: Request, res: Response) {
         : [],
 
       taskDistributionCard: {},
+
+      logsCard: workspace?.logs,
     };
     res.status(200).json({
       message: "Workspace dashboard found successfully",
@@ -322,7 +330,16 @@ export async function addWorkspaceMember(req: Request, res: Response) {
 }
 
 export async function registerAndAddMember(req: Request, res: Response) {
-  const { name, email, password, role, workspaceId, departmentId, contactNo, location } = req.body;
+  const {
+    name,
+    email,
+    password,
+    role,
+    workspaceId,
+    departmentId,
+    contactNo,
+    location,
+  } = req.body;
   const hashedPassword = await hashPassword(password);
 
   async function registerAndAddMember() {

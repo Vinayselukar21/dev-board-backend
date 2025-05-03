@@ -20,7 +20,7 @@ import verifyAccessToken from "../middlewares/verifyAccessToken";
 const router = Router();
 
 // Workspace Routes
-router.get("/:workspaceId/dashboard", verifyAccessToken, workspaceDashboard); // fetch workspace dashboard
+router.get("/:workspaceId/dashboard", verifyAccessToken, workspaceDashboard); // fetch workspace dashboard (includes logs)
 
 router.post("/create", verifyAccessToken, createWorkspace); // create a new workspace - done
 // router.put("/update/:id", verifyAccessToken, updateWorkspace); // update a workspace

@@ -6,9 +6,12 @@ interface JwtPayload {
   role?: string;
   iat?: number;
   exp?: number;
+  name: string;
+  email: string;
+  lastLogin: string;
 }
 
-interface CustomRequest extends Request {
+export interface CustomRequest extends Request {
   user?: JwtPayload;
 }
 

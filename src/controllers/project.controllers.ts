@@ -1,5 +1,7 @@
 import { Request, Response } from "express";
 import { prisma } from "../index";
+import { CustomRequest } from "../middlewares/verifyAccessToken";
+import log from "../utils/log";
 // PROJECT ----------------------------------------------------------------------------------------------
 export async function getProjectById(req: Request, res: Response) {
   const { projectId } = req.params;
@@ -15,13 +17,13 @@ export async function getProjectById(req: Request, res: Response) {
           },
         },
         members: {
-          include:{
+          include: {
             member: {
-              include:{
-                user: true
-              }
-            }
-          }
+              include: {
+                user: true,
+              },
+            },
+          },
         },
       },
     });
@@ -42,8 +44,40 @@ export async function getProjectById(req: Request, res: Response) {
   }
 }
 
+export async function getProjectLogs(req: Request, res: Response) {
+  const { workspaceId } = req.params;
+  async function getProjectLogs() {
+    const logs = await prisma.log.findMany({
+      where: {
+        workspaceId: workspaceId,
+        type: {
+          in: ["project", "task"],
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: 50,
+    });
+    return logs;
+  }
+
+  try {
+    const logs = await getProjectLogs();
+    res.status(200).json({
+      message: "Logs found successfully",
+      logs,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to get project logs",
+    });
+  }
+}
+
 // MEMBER RELATED //-------------------------------------------------------------------------------------
-export async function addMemberToProject(req: Request, res: Response) {
+export async function addMemberToProject(req: CustomRequest, res: Response) {
   const { projectId, memberId } = req.body;
   async function addMember() {
     // Add a member to a project
@@ -52,12 +86,27 @@ export async function addMemberToProject(req: Request, res: Response) {
         projectId,
         memberId,
       },
+      include: {
+        member: {
+          include: {
+            user: true,
+          },
+        },
+        project: true,
+      },
     });
     return res;
   }
 
   await addMember()
     .then(async (response) => {
+      log(
+        "project",
+        "create",
+        `${req?.user?.name} added ${response?.member?.user?.name} to project "${response?.project?.name}"`,
+        req.user?.id!,
+        response?.project?.workspaceId
+      );
       res.status(200).json({
         message: "Member added to project successfully",
         response,
@@ -73,7 +122,7 @@ export async function addMemberToProject(req: Request, res: Response) {
 export async function getMembers(req: Request, res: Response) {}
 
 // TASK RELATED //-------------------------------------------------------------------------------------
-export async function createTaskStage(req: Request, res: Response) {
+export async function createTaskStage(req: CustomRequest, res: Response) {
   const { projectId, name } = req.body;
   async function createTaskStage() {
     const taskStage = await prisma.taskStage.create({
@@ -81,12 +130,22 @@ export async function createTaskStage(req: Request, res: Response) {
         projectId,
         name,
       },
+      include: {
+        project: true,
+      },
     });
     return taskStage;
   }
 
   try {
     const taskStage = await createTaskStage();
+    log(
+      "task",
+      "create",
+      `${req?.user?.name} created a new task stage "${taskStage?.name}" in project ${taskStage?.project?.name}.`,
+      req.user?.id!,
+      taskStage?.project?.workspaceId
+    );
     res.status(200).json({
       message: "Task stage created successfully",
       taskStage,
@@ -99,7 +158,7 @@ export async function createTaskStage(req: Request, res: Response) {
   }
 }
 
-export async function createTask(req: Request, res: Response) {
+export async function createTask(req: CustomRequest, res: Response) {
   const {
     projectId,
     title,
@@ -122,12 +181,22 @@ export async function createTask(req: Request, res: Response) {
         stageId,
         createdById,
       },
+      include: {
+        project: true,
+      },
     });
     return task;
   }
 
   try {
     const task = await createTask();
+    log(
+      "task",
+      "create",
+      `${req?.user?.name} created a new task "${task?.title}" in project ${task?.project?.name}.`,
+      req.user?.id!,
+      task?.project?.workspaceId
+    );
     res.status(200).json({
       message: "Task created successfully",
       task,
@@ -168,7 +237,7 @@ export async function getAllTasksForProject(req: Request, res: Response) {
   }
 }
 
-export async function changeTaskStage(req: Request, res: Response){
+export async function changeTaskStage(req: CustomRequest, res: Response) {
   const { taskId, stageId } = req.body;
   async function changeTaskStage() {
     const task = await prisma.task.update({
@@ -178,12 +247,23 @@ export async function changeTaskStage(req: Request, res: Response){
       data: {
         stageId,
       },
+      include: {
+        stage: true,
+        project: true,
+      },
     });
     return task;
   }
 
   try {
     const task = await changeTaskStage();
+    log(
+      "task",
+      "update",
+      `${req?.user?.name} moved task "${task?.title}" to ${task?.stage?.name} in project ${task?.project?.name}.`,
+      req.user?.id!,
+      task?.project?.workspaceId
+    );
     res.status(200).json({
       message: "Task stage changed successfully",
       task,
@@ -196,7 +276,7 @@ export async function changeTaskStage(req: Request, res: Response){
   }
 }
 
-export async function deleteTask(req: Request, res: Response) {
+export async function deleteTask(req: CustomRequest, res: Response) {
   const { taskId } = req.params;
 
   async function deleteTask() {
@@ -204,22 +284,30 @@ export async function deleteTask(req: Request, res: Response) {
       where: {
         id: taskId,
       },
+      include: {
+        project: true,
+      },
     });
     return task;
   }
 
   try {
     const task = await deleteTask();
-    res.status(200)
-      .json({
-        message: "Task deleted successfully",
-        task,
-      });
+    log(
+      "task",
+      "delete",
+      `${req?.user?.name} deleted a task "${task?.title}" in project ${task?.project?.name}.`,
+      req.user?.id!,
+      task?.project?.workspaceId
+    );
+    res.status(200).json({
+      message: "Task deleted successfully",
+      task,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500)
-      .json({
-        message: "Failed to delete task",
-      });
+    res.status(500).json({
+      message: "Failed to delete task",
+    });
   }
 }

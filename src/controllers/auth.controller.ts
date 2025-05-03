@@ -59,6 +59,10 @@ export function login(req: Request, res: Response) {
           email: user.email,
           name: user.name,
           id: user.id,
+          role: user.role,
+          createdAt: user.createdAt,
+          contactNo: user.contactNo,
+          location: user.location,
           memberships: user.memberships,
         },
       });
@@ -118,6 +122,10 @@ export async function register(req: Request, res: Response) {
             email: response.email,
             name: response.name,
             id: response.id,
+            role: response.role,
+            createdAt: response.createdAt,
+            contactNo: response.contactNo,
+            location: response.location,
           },
         });
     })
@@ -216,6 +224,10 @@ export async function me(req: Request, res: Response) {
         email: user.email,
         name: user.name,
         id: user.id,
+        role: user.role,
+        createdAt: user.createdAt,
+        contactNo: user.contactNo,
+        location: user.location,
         memberships: user.memberships,
       },
       authStatus: "authenticated",
