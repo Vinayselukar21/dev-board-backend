@@ -1,7 +1,7 @@
 import { prisma } from "../index";
 
 const log = async (
-  type: string,
+  type: "user" | "workspace" | "project" | "task" | "setting",
   action: string,
   message: string,
   userId: string,
@@ -9,7 +9,7 @@ const log = async (
 ) => {
   const log = await prisma.log.create({
     data: {
-      type,
+      type, 
       action,
       message,
       userId,

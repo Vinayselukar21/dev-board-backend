@@ -16,6 +16,7 @@ export async function getProjectById(req: Request, res: Response) {
             tasks: true,
           },
         },
+        createdBy: true,
         members: {
           include: {
             member: {
