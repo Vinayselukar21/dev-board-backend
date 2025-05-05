@@ -92,3 +92,27 @@ export interface Task {
   createdBy: User;
   assignees: User[];
 }
+
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  description?: string;
+  date: string;
+  time: string;
+  endTime: string;
+  occurence: 'single' | 'recurring-weekly' | 'recurring-monthly';
+
+  // Relations
+  projectId?: string;
+  project?: Project;
+
+  workspaceId: string;
+  workspace: Workspace;
+
+  type: 'event' | 'meeting' | 'task';
+  location?: string;
+
+  createdAt: Date;
+  updatedAt: Date;
+}

@@ -52,25 +52,27 @@ model Workspace {
   projects Project[]
   departments Department[]
   logs Log[] @relation("WorkspaceLogs")
+
+  calendarEvents CalendarEvent[] @relation("WorkspaceCalendarEvents")
 }
 
 model WorkspaceMember {
-  id        String   @id @default(cuid())
-  role      String   @default("member") // e.g., admin, viewer, etc.
-  invitedAt DateTime @default(now())
-  accepted  Boolean  @default(false)
-  jobTitle  String   @default("")
-  
+  id          String   @id @default(cuid())
+  role        String   @default("member")
+  invitedAt   DateTime @default(now())
+  accepted    Boolean  @default(false)
+  jobTitle    String   @default("")
 
-  // Relations
   userId      String
   workspaceId String
-  user        User      @relation(fields: [userId], references: [id])
-  workspace   Workspace @relation(fields: [workspaceId], references: [id])
   departmentId String
-  department  Department @relation("MemberDepartment",fields: [departmentId], references: [id])
+
+  user        User        @relation(fields: [userId], references: [id])
+  workspace   Workspace   @relation(fields: [workspaceId], references: [id])
+  department  Department  @relation("MemberDepartment", fields: [departmentId], references: [id])
+
   projects     ProjectMember[]
-  // add workspace member designation
+  calendarEvents CalendarEventParticipant[] // ← Intermediate table
 }
 
 model ProjectMember {
@@ -106,6 +108,8 @@ model Project {
   // One-to-many relation
   tasks Task[] @relation("TaskProject")
   taskStages TaskStage[] @relation("ProjectTaskStages")
+
+  calendarEvents CalendarEvent[] @relation("ProjectCalendarEvents")
 
   members     ProjectMember[]
 }
@@ -169,4 +173,38 @@ model Log {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model CalendarEvent {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  date        String
+  time        String
+  endTime     String
+  occurence   String   @default("single") // single, recurring-weekly, recurring-monthly
+  type        String   @default("event") // event, meeting, task
+  location    String?
+
+  projectId   String?
+  project     Project?   @relation("ProjectCalendarEvents", fields: [projectId], references: [id])
+
+  workspaceId String
+  workspace   Workspace @relation("WorkspaceCalendarEvents", fields: [workspaceId], references: [id])
+
+  participants CalendarEventParticipant[] // ← Intermediate table
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CalendarEventParticipant {
+  id               String          @id @default(cuid())
+  calendarEventId  String
+  workspaceMemberId String
+
+  calendarEvent    CalendarEvent   @relation(fields: [calendarEventId], references: [id])
+  workspaceMember  WorkspaceMember @relation(fields: [workspaceMemberId], references: [id])
+
+  @@unique([calendarEventId, workspaceMemberId])
 }

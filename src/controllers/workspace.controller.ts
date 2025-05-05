@@ -38,7 +38,7 @@ export async function workspaceDashboard(req: Request, res: Response) {
         departments: true,
         logs: {
           orderBy: {
-            createdAt: 'desc',
+            createdAt: "desc",
           },
           take: 50,
         },
@@ -384,7 +384,7 @@ export async function registerAndAddMember(req: CustomRequest, res: Response) {
             workspaceId,
             role,
             departmentId,
-          }
+          },
         },
       },
       include: {
@@ -546,6 +546,86 @@ export async function getDepartments(req: Request, res: Response) {
     console.error(error);
     res.status(500).json({
       message: "Failed to get departments",
+    });
+  }
+}
+
+export async function getCalendarEvents(req: Request, res: Response) {
+  const { workspaceId } = req.params;
+  async function getCalendarEvents() {
+    const calendarEvents = await prisma.calendarEvent.findMany({
+      where: {
+        workspaceId: workspaceId,
+      },
+      include: {
+        participants: true,
+      },
+    });
+    return calendarEvents;
+  }
+
+  try {
+    const calendarEvents = await getCalendarEvents();
+    res.status(200).json({
+      message: "Calendar events found successfully",
+      calendarEvents,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to get calendar events",
+    });
+  }
+}
+
+export async function createCalendarEvent(req: CustomRequest, res: Response) {
+  const { workspaceId } = req.params;
+  const {
+    title,
+    description,
+    date,
+    time,
+    type,
+    endTime,
+    projectId,
+    occurence,
+    participants,
+  } = req.body;
+  async function createCalendarEvent() {
+    const calendarEvent = await prisma.calendarEvent.create({
+      data: {
+        title,
+        description,
+        date,
+        time,
+        endTime,
+        type,
+        workspaceId,
+        projectId,
+        occurence,
+        participants: {
+          createMany: {
+            data: participants.map((id: string) => ({
+              workspaceMemberId: id,
+            })),
+          },
+        },
+      },
+    });
+    return calendarEvent;
+  }
+
+  try {
+    const calendarEvent = await createCalendarEvent();
+    res.status(200).json({
+      message: "Calendar event created successfully",
+      calendarEvent,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to create calendar event",
+      error,
     });
   }
 }

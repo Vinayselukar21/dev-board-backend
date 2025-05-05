@@ -2,6 +2,8 @@ import { Router } from "express";
 import {
   addWorkspaceMember,
   createDepartment,
+  createCalendarEvent,
+  getCalendarEvents,
   // Workspace Projects Related
   createProject,
   // Workspace Related
@@ -43,5 +45,9 @@ router.post("/registerandaddmember", verifyAccessToken, registerAndAddMember);
 // Department Routes
 router.post("/newdepartment", verifyAccessToken, createDepartment); // create a new department
 router.get("/:workspaceId/getall", verifyAccessToken, getDepartments); // fetch all departments in a workspace
+
+// Calendar Event Routes
+router.post("/:workspaceId/newevent", verifyAccessToken, createCalendarEvent); // create a new calendar event
+router.get("/:workspaceId/events/getall", verifyAccessToken, getCalendarEvents); // fetch all calendar events in a workspace
 
 export default router;
