@@ -19,6 +19,7 @@ export interface User {
 
 export interface Workspace {
   id: string;
+  icon: string;
   name: string;
   description?: string;
   createdAt: string;
@@ -31,6 +32,7 @@ export interface Workspace {
 
 export interface Workspace {
   id: string;
+  icon: string;
   name: string;
   description?: string;
   createdAt: string;
@@ -43,13 +45,25 @@ export interface Workspace {
 
 export interface WorkspaceMember {
   id: string;
-  role: string;
+  role: string; //member, admin
   invitedAt: string;
   accepted: boolean;
   userId: string;
   workspaceId: string;
   user: User;
   workspace: Workspace;
+  createdEvents: CalendarEvent[]
+  department?: Department
+}
+
+export interface Department {
+  id: string;
+  workspaceId: string;
+  workspace: Workspace;
+  name: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  members: WorkspaceMember[];
 }
 
 export interface ProjectMember {
@@ -102,6 +116,7 @@ export interface CalendarEvent {
   time: string;
   endTime: string;
   occurence: 'single' | 'recurring-weekly' | 'recurring-monthly';
+  status: 'active' | 'cancelled';
 
   // Relations
   projectId?: string;
@@ -115,4 +130,7 @@ export interface CalendarEvent {
 
   createdAt: Date;
   updatedAt: Date;
+
+  createdById: string;
+  createdBy: WorkspaceMember;
 }

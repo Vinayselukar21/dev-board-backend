@@ -136,14 +136,22 @@ export async function workspaceDashboard(req: Request, res: Response) {
 }
 
 export async function createWorkspace(req: CustomRequest, res: Response) {
-  const { name, description, ownerId } = req.body as Workspace;
+  const { icon, name, description, ownerId } = req.body as Workspace;
   async function createWorkspace() {
     const workspace = await prisma.workspace.create({
       data: {
+        icon,
         name,
         description,
         ownerId,
+        members: {
+          create: {
+            userId: ownerId,
+            role: "admin",
+          },
+        },
       },
+
     });
     return workspace;
   }
@@ -177,12 +185,15 @@ export async function deleteWorkspace(req: Request, res: Response) {
   res.send("Delete Workspace");
 }
 
-export async function getWorkspaces(req: Request, res: Response) {
-  const { ownerId } = req.params;
+export async function getWorkspaces(req: CustomRequest, res: Response) {
   async function getWorkspaces() {
     const workspaces = await prisma.workspace.findMany({
       where: {
-        ownerId: ownerId,
+        members: {
+          some: {
+            userId: req.user?.id!,
+          },
+        },
       },
       include: {
         members: {
@@ -237,12 +248,12 @@ export async function getWorkspaceById(req: Request, res: Response) {
 }
 
 export async function createProject(req: CustomRequest, res: Response) {
+  const { workspaceId } = req.params;
   const {
     name,
     description,
     status,
     deadline,
-    workspaceId,
     createdById,
     members,
   } = req.body as Project;
@@ -273,6 +284,7 @@ export async function createProject(req: CustomRequest, res: Response) {
 
   try {
     const project = await createProject();
+    console.log(project, " db error ")
     log(
       "project",
       "create",
@@ -319,7 +331,7 @@ export async function getWorkspaceProjects(req: Request, res: Response) {
 
 export async function addWorkspaceMember(req: CustomRequest, res: Response) {
   const { workspaceId } = req.params;
-  const { userId, role, departmentId } = req.body;
+  const { userId, role, departmentId, jobTitle } = req.body;
   async function addWorkspaceMember() {
     const workspaceMember = await prisma.workspaceMember.create({
       data: {
@@ -327,6 +339,7 @@ export async function addWorkspaceMember(req: CustomRequest, res: Response) {
         workspaceId: workspaceId,
         role,
         departmentId,
+        jobTitle,
       },
       include: {
         workspace: true,
@@ -550,12 +563,17 @@ export async function getDepartments(req: Request, res: Response) {
   }
 }
 
-export async function getCalendarEvents(req: Request, res: Response) {
-  const { workspaceId } = req.params;
+export async function getCalendarEvents(req: CustomRequest, res: Response) {
+  const { workspaceId, workspaceMemberId } = req.params;
   async function getCalendarEvents() {
     const calendarEvents = await prisma.calendarEvent.findMany({
       where: {
         workspaceId: workspaceId,
+        participants: {
+          some:{
+            workspaceMemberId: workspaceMemberId,
+          }
+        },
       },
       include: {
         participants: true,
@@ -590,6 +608,9 @@ export async function createCalendarEvent(req: CustomRequest, res: Response) {
     projectId,
     occurence,
     participants,
+    status,
+    location,
+    createdById,
   } = req.body;
   async function createCalendarEvent() {
     const calendarEvent = await prisma.calendarEvent.create({
@@ -603,6 +624,9 @@ export async function createCalendarEvent(req: CustomRequest, res: Response) {
         workspaceId,
         projectId,
         occurence,
+        status,
+        location,
+        createdById,
         participants: {
           createMany: {
             data: participants.map((id: string) => ({
@@ -617,6 +641,13 @@ export async function createCalendarEvent(req: CustomRequest, res: Response) {
 
   try {
     const calendarEvent = await createCalendarEvent();
+    log(
+      "calendarEvent",
+      "create",
+      `${req?.user?.name} created a new ${type} "${calendarEvent?.title}" in workspace ${calendarEvent?.workspaceId}.`,
+      req.user?.id!,
+      calendarEvent?.workspaceId
+    );
     res.status(200).json({
       message: "Calendar event created successfully",
       calendarEvent,
@@ -625,6 +656,139 @@ export async function createCalendarEvent(req: CustomRequest, res: Response) {
     console.error(error);
     res.status(500).json({
       message: "Failed to create calendar event",
+      error,
+    });
+  }
+}
+
+
+export async function editCalendarEvent(req: CustomRequest, res: Response) {
+  const { workspaceId } = req.params;
+  const { id, title, description, date, time, type, endTime, projectId, occurence, participants, status, location } = req.body;
+
+  async function editCalendarEvent() {
+    const calendarEvent = await prisma.calendarEvent.update({
+      where: {
+        id: id,
+        workspaceId: workspaceId,
+      },
+      data: {
+        title,
+        description,
+        date,
+        time,
+        endTime,
+        type,
+        projectId,
+        occurence,
+        status,
+        location,
+        participants: {
+          deleteMany: {
+            calendarEventId: id,
+          },
+          createMany: {
+            data: participants.map((id: string) => ({
+              workspaceMemberId: id,
+            })),
+          },
+        },
+      },
+    });
+    return calendarEvent;
+  }
+
+  try {
+    const calendarEvent = await editCalendarEvent();
+    log(
+      "calendarEvent",
+      "edit",
+      `${req?.user?.name} edited a ${type} "${calendarEvent?.title}" in workspace ${calendarEvent?.workspaceId}.`,
+      req.user?.id!,
+      calendarEvent?.workspaceId
+    );
+    res.status(200).json({
+      message: "Calendar event edited successfully",
+      calendarEvent,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to edit calendar event",
+      error,
+    });
+  }
+
+}
+
+export async function deleteCalendarEvent(req: CustomRequest, res: Response) {
+  const { workspaceId , eventId } = req.params;
+
+  async function deleteCalendarEvent() {
+    const calendarEvent = await prisma.calendarEvent.delete({
+      where: {
+        id: eventId,
+        workspaceId: workspaceId,
+      },
+    });
+    return calendarEvent;
+  }
+
+  try {
+    const calendarEvent = await deleteCalendarEvent();
+    log(
+      "calendarEvent",
+      "delete",
+      `${req?.user?.name} deleted a ${calendarEvent?.type} "${calendarEvent?.title}" in workspace ${calendarEvent?.workspaceId}.`,
+      req.user?.id!,
+      calendarEvent?.workspaceId
+    );
+    res.status(200).json({
+      message: "Calendar event deleted successfully",
+      calendarEvent,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to delete calendar event",
+      error,
+    });
+  }
+}
+
+export async function cancelCalendarEvent(req: CustomRequest, res:Response){
+  const {workspaceId, eventId} = req.params;
+
+  async function cancelCalendarEvent(){
+    const calendarEvent = await prisma.calendarEvent.update({
+      where: {
+        id: eventId,
+        workspaceId: workspaceId,
+      },
+      data: {
+        status: "cancelled",
+      },
+    });
+    return calendarEvent;
+  }
+
+  try {
+    const calendarEvent = await cancelCalendarEvent();
+    log(
+      "calendarEvent",
+      "cancel",
+      `${req?.user?.name} cancelled a ${calendarEvent?.type} "${calendarEvent?.title}" in workspace ${calendarEvent?.workspaceId}.`,
+      req.user?.id!,
+      calendarEvent?.workspaceId
+    );
+    res.status(200).json({
+      message: "Calendar event cancelled successfully",
+      calendarEvent,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to cancel calendar event",
       error,
     });
   }

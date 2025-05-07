@@ -1,7 +1,7 @@
 import { prisma } from "../index";
 
 const log = async (
-  type: "user" | "workspace" | "project" | "task" | "setting",
+  type: "user" | "workspace" | "project" | "task" | "setting" | "calendarEvent",
   action: string,
   message: string,
   userId: string,

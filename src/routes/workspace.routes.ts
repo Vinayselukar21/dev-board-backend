@@ -15,7 +15,10 @@ import {
   getWorkspaces,
   registerAndAddMember,
   getWorkspaceMemberById,
-  workspaceDashboard
+  workspaceDashboard,
+  editCalendarEvent,
+  deleteCalendarEvent,
+  cancelCalendarEvent,
 } from "../controllers/workspace.controller";
 import verifyAccessToken from "../middlewares/verifyAccessToken";
 
@@ -31,7 +34,7 @@ router.get("/getall/:ownerId", verifyAccessToken, getWorkspaces); // fetch works
 router.get("/getbyid/:workspaceId", verifyAccessToken, getWorkspaceById); // fetch a workspace by id
 
 // Workspace Projects Routes
-router.post("/newproject", verifyAccessToken, createProject); // create a new project
+router.post("/:workspaceId/newproject", verifyAccessToken, createProject); // create a new project
 router.get("/:workspaceId/getall", verifyAccessToken, getWorkspaceProjects); // fetch all projects in a workspace
 
 // Workspace Member Routes
@@ -48,6 +51,9 @@ router.get("/:workspaceId/getall", verifyAccessToken, getDepartments); // fetch 
 
 // Calendar Event Routes
 router.post("/:workspaceId/newevent", verifyAccessToken, createCalendarEvent); // create a new calendar event
-router.get("/:workspaceId/events/getall", verifyAccessToken, getCalendarEvents); // fetch all calendar events in a workspace
+router.get("/:workspaceId/:workspaceMemberId/events/getall", verifyAccessToken, getCalendarEvents); // fetch all calendar events in a workspace
+router.put("/:workspaceId/event/update", verifyAccessToken, editCalendarEvent); // edit a calendar event
+router.delete("/:workspaceId/events/delete/:eventId", verifyAccessToken, deleteCalendarEvent); // delete a calendar event
+router.put("/:workspaceId/events/cancel/:eventId", verifyAccessToken, cancelCalendarEvent); // cancel a calendar event
 
 export default router;

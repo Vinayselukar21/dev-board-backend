@@ -40,6 +40,7 @@ model User {
 
 model Workspace {
   id          String   @id @default(cuid())
+  icon        String?
   name        String
   description String?
   createdAt   DateTime @default(now())
@@ -54,26 +55,45 @@ model Workspace {
   logs Log[] @relation("WorkspaceLogs")
 
   calendarEvents CalendarEvent[] @relation("WorkspaceCalendarEvents")
+  
+  relationships MemberWorkspaceRelationship[]
 }
 
 model WorkspaceMember {
   id          String   @id @default(cuid())
-  role        String   @default("member")
+  role        String   @default("member")  //member, admin
   invitedAt   DateTime @default(now())
   accepted    Boolean  @default(false)
   jobTitle    String   @default("")
 
   userId      String
   workspaceId String
-  departmentId String
+  departmentId String?
 
   user        User        @relation(fields: [userId], references: [id])
   workspace   Workspace   @relation(fields: [workspaceId], references: [id])
-  department  Department  @relation("MemberDepartment", fields: [departmentId], references: [id])
+  department  Department?  @relation("MemberDepartment", fields: [departmentId], references: [id])
 
   projects     ProjectMember[]
   calendarEvents CalendarEventParticipant[] // ← Intermediate table
+
+  createdEvents CalendarEvent[] @relation("CreatedEvents")
+
+  relationships MemberWorkspaceRelationship[]
 }
+
+model MemberWorkspaceRelationship {
+  id               String          @id @default(cuid())
+  workspaceMemberId String
+  workspaceId String
+
+  workspaceMember  WorkspaceMember @relation(fields: [workspaceMemberId], references: [id])
+  workspace        Workspace       @relation(fields: [workspaceId], references: [id])
+
+  @@unique([workspaceMemberId, workspaceId])
+}
+
+
 
 model ProjectMember {
   id              String           @id @default(cuid())
@@ -185,6 +205,10 @@ model CalendarEvent {
   occurence   String   @default("single") // single, recurring-weekly, recurring-monthly
   type        String   @default("event") // event, meeting, task
   location    String?
+  status      String   @default("active") // active, cancelled
+
+  createdById String @default("")
+  createdBy   WorkspaceMember   @relation("CreatedEvents",fields: [createdById], references: [id])
 
   projectId   String?
   project     Project?   @relation("ProjectCalendarEvents", fields: [projectId], references: [id])
