@@ -13,6 +13,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  type      String @default("personal") // personal, work 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ownerId String
+  owner User @relation("OrganizationOwner", fields: [ownerId], references: [id])
+
+  users User[] @relation("OrganizationUsers")
+  workspaces Workspace[] @relation("OrganizationWorkspaces")
+
+  logs Log[] @relation("OrganizationLogs")
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -23,6 +40,7 @@ model User {
   updatedAt DateTime @updatedAt
   contactNo  String @db.VarChar(20) @default("")
   location String? @db.VarChar(255) @default("")
+
 
   // Workspace relations
   ownedWorkspaces Workspace[]       @relation("OwnedWorkspaces")
@@ -36,6 +54,13 @@ model User {
   Project    Project[]
   Task       Task[]
   logs Log[] @relation("UserLogs")
+
+
+  // Organization relations
+  ownedOrganizations Organization[] @relation("OrganizationOwner")
+
+  organizationId String?
+  organization Organization? @relation("OrganizationUsers", fields: [organizationId], references: [id])
 }
 
 model Workspace {
@@ -47,16 +72,21 @@ model Workspace {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  ownerId  String
-  owner    User              @relation("OwnedWorkspaces", fields: [ownerId], references: [id])
+  ownerId  String?
+  owner    User?              @relation("OwnedWorkspaces", fields: [ownerId], references: [id])
   members  WorkspaceMember[]
   projects Project[]
   departments Department[]
   logs Log[] @relation("WorkspaceLogs")
 
+
   calendarEvents CalendarEvent[] @relation("WorkspaceCalendarEvents")
   
   relationships MemberWorkspaceRelationship[]
+
+
+  organizationId String?
+  organization Organization? @relation("OrganizationWorkspaces", fields: [organizationId], references: [id]) 
 }
 
 model WorkspaceMember {
@@ -93,8 +123,6 @@ model MemberWorkspaceRelationship {
   @@unique([workspaceMemberId, workspaceId])
 }
 
-
-
 model ProjectMember {
   id              String           @id @default(cuid())
   projectId       String
@@ -107,7 +135,6 @@ model ProjectMember {
 
   @@unique([projectId, memberId]) // Optional: Prevent duplicate entries
 }
-
 
 model Project {
   id          String    @id @default(cuid())
@@ -193,6 +220,9 @@ model Log {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  organizationId String?
+  organization Organization? @relation("OrganizationLogs", fields: [organizationId], references: [id])
 }
 
 model CalendarEvent {

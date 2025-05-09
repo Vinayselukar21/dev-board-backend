@@ -1,3 +1,15 @@
+
+export interface Organization {
+  id: string;
+  name: string;
+  type: string;
+  createdAt: string;
+  updatedAt: string;
+  users?: User[];
+  workspaces?: Workspace[];
+  logs?: Log[];
+}
+
 export interface User {
   id: string;
   email: string;
@@ -10,11 +22,11 @@ export interface User {
   lastLogin?: string;
   contactNo?: string;
   location?: string;
-  ownedWorkspaces: Workspace[];
-  memberships: WorkspaceMember[];
-  assignedTasks: Task[];
-  Project: Project[];
-  Task: Task[];
+  ownedWorkspaces?: Workspace[];
+  memberships?: WorkspaceMember[];
+  assignedTasks?: Task[];
+  Project?: Project[];
+  Task?: Task[];
 }
 
 export interface Workspace {
@@ -98,8 +110,8 @@ export interface Task {
   status: string;
   priority: string;
   dueDate?: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date | null;
+  updatedAt: Date | null;
   projectId: string;
   project: Project;
   createdById: string;
@@ -128,9 +140,29 @@ export interface CalendarEvent {
   type: 'event' | 'meeting' | 'task';
   location?: string;
 
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | null;
+  updatedAt: Date | null;
 
   createdById: string;
   createdBy: WorkspaceMember;
 }
+
+export interface Log {
+  id: string;
+  type: "workspace" | "project" | "task"; // assuming these are the only valid types
+  action: string;
+  message: string;
+
+  workspaceId: string;
+  userId: string;
+  organizationId: string;
+
+  createdAt: Date | null;
+  updatedAt: Date | null;
+
+  // Optional nested objects if you choose to include relations
+  workspace?: Workspace;
+  user?: User;
+  organization?: Organization;
+}
+
