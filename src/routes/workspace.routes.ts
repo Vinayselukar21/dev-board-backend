@@ -13,7 +13,7 @@ import {
   getWorkspaceMembers,
   getWorkspaceProjects,
   getWorkspaces,
-  registerAndAddMember,
+  // registerAndAddMember,
   getWorkspaceMemberById,
   workspaceDashboard,
   editCalendarEvent,
@@ -43,7 +43,9 @@ router.get("/:workspaceId/members", verifyAccessToken, getWorkspaceMembers); // 
 router.get("/:workspaceId/member/:memberId", verifyAccessToken, getWorkspaceMemberById); // fetch all members in a workspace
 
 // Owener registers a user and add new member to workspace
-router.post("/registerandaddmember", verifyAccessToken, registerAndAddMember);
+// router.post("/registerandaddmember", verifyAccessToken, registerAndAddMember);
+
+
 
 // Department Routes
 router.post("/newdepartment", verifyAccessToken, createDepartment); // create a new department

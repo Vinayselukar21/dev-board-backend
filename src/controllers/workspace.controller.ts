@@ -136,7 +136,7 @@ export async function workspaceDashboard(req: Request, res: Response) {
 }
 
 export async function createWorkspace(req: CustomRequest, res: Response) {
-  const { icon, name, description, ownerId } = req.body as Workspace;
+  const { icon, name, description, ownerId, organizationId } = req.body as Workspace;
   async function createWorkspace() {
     const workspace = await prisma.workspace.create({
       data: {
@@ -150,6 +150,7 @@ export async function createWorkspace(req: CustomRequest, res: Response) {
             role: "admin",
           },
         },
+        organizationId,
       },
 
     });
@@ -256,7 +257,8 @@ export async function createProject(req: CustomRequest, res: Response) {
     deadline,
     createdById,
     members,
-  } = req.body as Project;
+    organizationId
+  } = req.body;
   async function createProject() {
     const project = await prisma.project.create({
       data: {
@@ -331,19 +333,28 @@ export async function getWorkspaceProjects(req: Request, res: Response) {
 
 export async function addWorkspaceMember(req: CustomRequest, res: Response) {
   const { workspaceId } = req.params;
-  const { userId, role, departmentId, jobTitle } = req.body;
+  const { userIds, role, departmentId } = req.body;
   async function addWorkspaceMember() {
-    const workspaceMember = await prisma.workspaceMember.create({
-      data: {
+    const workspaceMember = await prisma.workspaceMember.createMany({
+      data: userIds.map((userId: string) => ({
         userId,
-        workspaceId: workspaceId,
+        workspaceId,
         role,
         departmentId,
-        jobTitle,
+      })),
+      skipDuplicates: true,
+    });
+    return workspaceMember;
+  }
+
+  async function getWorkspaceMember() {
+    const workspaceMember = await prisma.workspaceMember.findMany({
+      where: {
+        workspaceId: workspaceId,
       },
       include: {
-        workspace: true,
         user: true,
+        workspace: true,
       },
     });
     return workspaceMember;
@@ -351,12 +362,13 @@ export async function addWorkspaceMember(req: CustomRequest, res: Response) {
 
   try {
     const workspaceMember = await addWorkspaceMember();
+    const workspaceMemberData = await getWorkspaceMember();
     log(
       "workspace",
       "addMember",
-      `${req?.user?.name} added a new member "${workspaceMember?.user?.name}" to workspace ${workspaceMember?.workspace?.name}.`,
+      `${req?.user?.name} added a new member "${workspaceMemberData.map((member) => member.user.name).join(", ")}" to workspace ${workspaceMemberData[0]?.workspace?.name}.`,
       req.user?.id!,
-      workspaceMember?.workspace?.id
+      workspaceMemberData[0]?.workspace?.id
     );
     res.status(200).json({
       message: "Workspace member added successfully",
@@ -370,67 +382,75 @@ export async function addWorkspaceMember(req: CustomRequest, res: Response) {
   }
 }
 
-export async function registerAndAddMember(req: CustomRequest, res: Response) {
-  const {
-    name,
-    email,
-    password,
-    role,
-    workspaceId,
-    departmentId,
-    contactNo,
-    location,
-  } = req.body;
-  const hashedPassword = await hashPassword(password);
+// export async function registerAndAddMember(req: CustomRequest, res: Response) {
+//   const {
+//     name,
+//     email,
+//     password,
+//     role,
+//     workspaceId,
+//     departmentId,
+//     contactNo,
+//     location,
+//     organizationId,
+//     jobTitle,
+//     designation,
+//   } = req.body;
+//   const hashedPassword = await hashPassword(password);
 
-  async function registerAndAddMember() {
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        role: "user",
-        contactNo,
-        location,
-        memberships: {
-          create: {
-            workspaceId,
-            role,
-            departmentId,
-          },
-        },
-      },
-      include: {
-        memberships: {
-          include: {
-            workspace: true,
-          },
-        },
-      },
-    });
-    return user;
-  }
+//   async function registerAndAddMember() {
+//     const user = await prisma.user.create({
+//       data: {
+//         name,
+//         email,
+//         password: hashedPassword,
+//         role: "user",
+//         contactNo,
+//         location,
+//         jobTitle,
+//         designation,
+//         memberships: {
+//           create: {
+//             workspaceId,
+//             role,
+//             departmentId,
+//             organizationId,
+//           },
+//         },
+//         organizationId,
+//       },
+//       include: {
+//         memberships: {
+//           include: {
+//             workspace: true,
+//           },
+//         },
+//         organization: true,
+//       },
+//     });
+//     return user;
+//   }
 
-  try {
-    const user = await registerAndAddMember();
-    log(
-      "user",
-      "create",
-      `${req?.user?.name} added a new user "${user?.name}" to workspace ${user?.memberships[0]?.workspace?.name}.`,
-      req.user?.id!,
-      user?.memberships[0]?.workspace?.id
-    );
-    res.status(200).json({
-      message: "User registered and added to workspace successfully",
-      user,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: "Failed to register and add user to workspace",
-    });
-  }
-}
+//   try {
+//     const user = await registerAndAddMember();
+//     log(
+//       "user",
+//       "create",
+//       `${req?.user?.name} added a new user "${user?.name}" to workspace ${user?.memberships[0]?.workspace?.name}.`,
+//       req.user?.id!,
+//       user?.memberships[0]?.workspace?.id
+//     );
+//     res.status(200).json({
+//       message: "User registered and added to workspace successfully",
+//       user,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({
+//       message: "Failed to register and add user to workspace",
+//     });
+//   }
+// }
 
 export async function getWorkspaceMembers(req: Request, res: Response) {
   const { workspaceId } = req.params;

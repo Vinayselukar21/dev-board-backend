@@ -4,6 +4,7 @@ import { jwtSecret, prisma } from "../index";
 import { comparePassword, hashPassword } from "../utils/hash";
 import { generateTokens } from "../utils/generateTokens";
 import { accessCookieMaxAge, refreshCookieMaxAge } from "../utils/cookieMaxAge";
+import { User } from "@prisma/client";
 
 export function login(req: Request, res: Response) {
   const { email, password } = req.body;
@@ -15,6 +16,13 @@ export function login(req: Request, res: Response) {
       },
       include: {
         memberships: true,
+        organization: true,
+        ownedOrganization: {
+          include: {
+            owner: true,
+            users: true,
+          },
+        },
       },
     });
     return user;
@@ -63,7 +71,12 @@ export function login(req: Request, res: Response) {
           createdAt: user.createdAt,
           contactNo: user.contactNo,
           location: user.location,
+          jobTitle: user.jobTitle,
+          designation: user.designation,
           memberships: user.memberships,
+          organizationId: user.organizationId,
+          organization: user.organization,
+          ownedOrganization: user.ownedOrganization,
         },
       });
   }
@@ -72,9 +85,28 @@ export function login(req: Request, res: Response) {
 }
 
 export async function register(req: Request, res: Response) {
-  const { name, email, password, role, contactNo, location } = req.body;
+  const { name, email, password, role, contactNo, location, organizationName, organizationType} = req.body;
   const hashedPassword = await hashPassword(password);
 
+  async function createOrganization(user: User, type: string, name: string) {
+    const organization = await prisma.organization.create({
+      data: {
+        name,
+        type,
+        ownerId: user.id,
+        users: {
+          connect: {
+            id: user.id,
+          },
+        },
+      },
+      include: {
+        users: true,
+        owner: true,
+      },
+    });
+    return organization;
+  }
   async function main() {
     const user = await prisma.user.create({
       data: {
@@ -85,13 +117,16 @@ export async function register(req: Request, res: Response) {
         password: hashedPassword,
         role,
       },
+      include: {
+        organization: true,
+      },
     });
     return user;
   }
 
   await main()
     .then(async (response) => {
-      // await prisma.$disconnect();
+      const organization = await createOrganization(response, organizationType, organizationName);
       const tokens = await generateTokens({
         id: response.id,
         email: response.email,
@@ -125,7 +160,12 @@ export async function register(req: Request, res: Response) {
             role: response.role,
             createdAt: response.createdAt,
             contactNo: response.contactNo,
+            jobTitle: response.jobTitle,
+            designation: response.designation,
             location: response.location,
+            organizationId: organization.id,
+            ownedOrganization: organization,
+            organization: organization,
           },
         });
     })
@@ -209,9 +249,18 @@ export async function me(req: Request, res: Response) {
     const user = await prisma.user.findUnique({
       where: {
         email: email,
+        id: id,
       },
       include: {
         memberships: true,
+        ownedOrganization: {
+          include: {
+            owner: true,
+            users: true,
+          },
+        },
+        organization: true,
+        ownedWorkspaces: true,
       },
     });
     if (!user) {
@@ -225,10 +274,16 @@ export async function me(req: Request, res: Response) {
         name: user.name,
         id: user.id,
         role: user.role,
+        jobTitle: user.jobTitle,
+        designation: user.designation,
         createdAt: user.createdAt,
         contactNo: user.contactNo,
         location: user.location,
         memberships: user.memberships,
+        organizationId: user.organizationId,
+        organization: user.organization,
+        ownedWorkspaces: user.ownedWorkspaces,
+        ownedOrganization: user.ownedOrganization,
       },
       authStatus: "authenticated",
     });

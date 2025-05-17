@@ -17,17 +17,17 @@ datasource db {
 model Organization {
   id        String   @id @default(uuid())
   name      String
-  type      String @default("personal") // personal, work 
+  type      String @default("personal")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  ownerId String
-  owner User @relation("OrganizationOwner", fields: [ownerId], references: [id])
+  ownerId String   @unique
+  owner   User     @relation("OrganizationOwner", fields: [ownerId], references: [id])
 
-  users User[] @relation("OrganizationUsers")
-  workspaces Workspace[] @relation("OrganizationWorkspaces")
-
-  logs Log[] @relation("OrganizationLogs")
+  users     User[]            @relation("OrganizationUsers")
+  workspaces Workspace[]      @relation("OrganizationWorkspaces")
+  members    WorkspaceMember[] @relation("OrganizationWorkspaceMembers")
+  logs       Log[]             @relation("OrganizationLogs")
 }
 
 model User {
@@ -38,30 +38,32 @@ model User {
   role      String   @default("admin")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  contactNo  String @db.VarChar(20) @default("")
-  location String? @db.VarChar(255) @default("")
-
+  contactNo String   @db.VarChar(20) @default("")
+  location  String?  @db.VarChar(255) @default("")
+  jobTitle    String   @default("")
+  designation String   @default("")
 
   // Workspace relations
-  ownedWorkspaces Workspace[]       @relation("OwnedWorkspaces")
+  ownedWorkspaces Workspace[] @relation("OwnedWorkspaces")
   memberships     WorkspaceMember[]
+
+  // Task relations
+  assignedTasks Task[] @relation("AssignedTasks")
+  Project        Project[]
+  Task           Task[]
+  logs           Log[] @relation("UserLogs")
 
   isVerified Boolean   @default(false)
   lastLogin  DateTime?
 
-  // Task relations
-  assignedTasks Task[] @relation("AssignedTasks")
-  Project    Project[]
-  Task       Task[]
-  logs Log[] @relation("UserLogs")
+  // ✅ User may or may not own an organization (optional 1:1)
+  ownedOrganization Organization? @relation("OrganizationOwner")
 
-
-  // Organization relations
-  ownedOrganizations Organization[] @relation("OrganizationOwner")
-
+  // Organization membership (optional)
   organizationId String?
-  organization Organization? @relation("OrganizationUsers", fields: [organizationId], references: [id])
+  organization   Organization? @relation("OrganizationUsers", fields: [organizationId], references: [id])
 }
+
 
 model Workspace {
   id          String   @id @default(cuid())
@@ -74,11 +76,14 @@ model Workspace {
   // Relations
   ownerId  String?
   owner    User?              @relation("OwnedWorkspaces", fields: [ownerId], references: [id])
+  
   members  WorkspaceMember[]
-  projects Project[]
-  departments Department[]
-  logs Log[] @relation("WorkspaceLogs")
 
+  projects Project[]
+  
+  departments Department[]
+  
+  logs Log[] @relation("WorkspaceLogs")
 
   calendarEvents CalendarEvent[] @relation("WorkspaceCalendarEvents")
   
@@ -94,7 +99,6 @@ model WorkspaceMember {
   role        String   @default("member")  //member, admin
   invitedAt   DateTime @default(now())
   accepted    Boolean  @default(false)
-  jobTitle    String   @default("")
 
   userId      String
   workspaceId String
@@ -110,6 +114,9 @@ model WorkspaceMember {
   createdEvents CalendarEvent[] @relation("CreatedEvents")
 
   relationships MemberWorkspaceRelationship[]
+
+  organizationId String?
+  organization Organization? @relation("OrganizationWorkspaceMembers", fields: [organizationId], references: [id])
 }
 
 model MemberWorkspaceRelationship {
@@ -197,14 +204,17 @@ model Task {
 }
 
 model Department {
-  id        String   @id @default(cuid())
+  id          String           @id @default(cuid())
   workspaceId String
-  workspace Workspace @relation(fields: [workspaceId], references: [id])
-  name      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  members   WorkspaceMember[] @relation("MemberDepartment")
+  workspace   Workspace        @relation(fields: [workspaceId], references: [id])
+  name        String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  members     WorkspaceMember[] @relation("MemberDepartment")
+
+  @@unique([name, workspaceId]) // ✅ compound unique constraint
 }
+
 
 model Log {
   id        String   @id @default(cuid())
