@@ -33,6 +33,9 @@ export interface User {
   Task?: Task[];
   ownedOrganization?: Organization;
   organization?: Organization;
+
+  organizationRole?: OrganizationRole;
+  organizationRoleId?: string;
 }
 
 export interface Workspace {
@@ -60,13 +63,17 @@ export interface Workspace {
 
   organizationId?: string;
   organization?: Organization;
+
+  roles: WorkspaceRole[];
 }
 
 export interface WorkspaceMember {
   id: string;
-  role: string; //member, admin
   invitedAt: string;
   accepted: boolean;
+  
+  roleId: string;
+  role: WorkspaceRole;
 
   userId: string;
   workspaceId: string;
@@ -229,4 +236,84 @@ export interface CalendarEventParticipant {
   // Optional nested objects
   calendarEvent?: CalendarEvent;
   workspaceMember?: WorkspaceMember;
+}
+
+
+// Roles and permissions
+
+export enum PermissionType {
+  VIEW_PROJECT = 'VIEW_PROJECT',
+  ALL_PROJECT = 'ALL_PROJECT',
+  CREATE_PROJECT = 'CREATE_PROJECT',
+  EDIT_PROJECT = 'EDIT_PROJECT',
+  DELETE_PROJECT = 'DELETE_PROJECT',
+
+  VIEW_TASK = 'VIEW_TASK',
+  ALL_TASK = 'ALL_TASK',
+  CREATE_TASK = 'CREATE_TASK',
+  EDIT_ANY_TASK = 'EDIT_ANY_TASK',
+  DELETE_TASK = 'DELETE_TASK',
+
+  ADD_MEMBER = 'ADD_MEMBER',
+  REMOVE_MEMBER = 'REMOVE_MEMBER',
+  CHANGE_MEMBER_ROLE = 'CHANGE_MEMBER_ROLE',
+
+  CREATE_EVENT = 'CREATE_EVENT',
+  EDIT_EVENT = 'EDIT_EVENT',
+  EDIT_ANY_EVENT = 'EDIT_ANY_EVENT',
+  DELETE_EVENT = 'DELETE_EVENT',
+}
+
+export enum OrgPermissionType {
+  OWNER = 'OWNER',
+
+  VIEW_ORG = 'VIEW_ORG',
+  ONBOARD_USER = 'ONBOARD_USER',
+  REMOVE_USER = 'REMOVE_USER',
+  CHANGE_USER_ROLE = 'CHANGE_USER_ROLE',
+
+  VIEW_WORKSPACE = 'VIEW_WORKSPACE',
+  CREATE_WORKSPACE = 'CREATE_WORKSPACE',
+  EDIT_WORKSPACE = 'EDIT_WORKSPACE',
+  DELETE_WORKSPACE = 'DELETE_WORKSPACE',
+}
+
+export interface WorkspacePermission {
+  id: string;
+  type: PermissionType;
+  roleId: string;
+  role?: WorkspaceRole;
+}
+
+export interface WorkspaceRole {
+  id: string;
+  name: string;
+  description?: string;
+  isDefault: boolean;
+
+  workspaceId: string;
+  workspace?: Workspace;
+
+  permissions?: WorkspacePermission[];
+  members?: WorkspaceMember[];
+}
+
+export interface OrgPermission {
+  id: string;
+  type: OrgPermissionType;
+  roleId: string;
+  role?: OrganizationRole;
+}
+
+export interface OrganizationRole {
+  id: string;
+  name: string;
+  description?: string;
+  isDefault: boolean;
+
+  organizationId: string;
+  organization?: Organization;
+
+  permissions?: OrgPermission[];
+  members?: User[];
 }

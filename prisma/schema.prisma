@@ -24,6 +24,8 @@ model Organization {
   ownerId String   @unique
   owner   User     @relation("OrganizationOwner", fields: [ownerId], references: [id])
 
+  roles OrganizationRole[]
+
   users     User[]            @relation("OrganizationUsers")
   workspaces Workspace[]      @relation("OrganizationWorkspaces")
   members    WorkspaceMember[] @relation("OrganizationWorkspaceMembers")
@@ -42,6 +44,9 @@ model User {
   location  String?  @db.VarChar(255) @default("")
   jobTitle    String   @default("")
   designation String   @default("")
+
+  organizationRole  OrganizationRole?   @relation(fields: [organizationRoleId], references: [id])
+  organizationRoleId String?
 
   // Workspace relations
   ownedWorkspaces Workspace[] @relation("OwnedWorkspaces")
@@ -89,6 +94,7 @@ model Workspace {
   
   relationships MemberWorkspaceRelationship[]
 
+  roles WorkspaceRole[]
 
   organizationId String?
   organization Organization? @relation("OrganizationWorkspaces", fields: [organizationId], references: [id]) 
@@ -96,9 +102,11 @@ model Workspace {
 
 model WorkspaceMember {
   id          String   @id @default(cuid())
-  role        String   @default("member")  //member, admin
   invitedAt   DateTime @default(now())
   accepted    Boolean  @default(false)
+
+  roleId       String?
+  role         WorkspaceRole?   @relation(fields: [roleId], references: [id])
 
   userId      String
   workspaceId String
@@ -271,4 +279,85 @@ model CalendarEventParticipant {
   workspaceMember  WorkspaceMember @relation(fields: [workspaceMemberId], references: [id])
 
   @@unique([calendarEventId, workspaceMemberId])
+}
+
+
+// Roles and Permissions
+
+enum PermissionType {
+  VIEW_PROJECT
+  ALL_PROJECT
+  CREATE_PROJECT
+  EDIT_PROJECT
+  DELETE_PROJECT
+
+  VIEW_TASK
+  ALL_TASK
+  CREATE_TASK
+  EDIT_ANY_TASK
+  DELETE_TASK
+
+  ADD_MEMBER
+  REMOVE_MEMBER
+  CHANGE_MEMBER_ROLE
+
+  CREATE_EVENT
+  EDIT_EVENT
+  EDIT_ANY_EVENT
+  DELETE_EVENT
+}
+
+enum OrgPermissionType {
+  OWNER
+
+  VIEW_ORG
+  ONBOARD_USER
+  REMOVE_USER
+  CHANGE_USER_ROLE
+
+  VIEW_WORKSPACE
+  CREATE_WORKSPACE
+  EDIT_WORKSPACE
+  DELETE_WORKSPACE
+}
+
+model WorkspaceRole {
+  id          String                @id @default(cuid())
+  name        String                @unique // e.g., "Viewer", "Editor", etc.
+  description String?
+  isDefault   Boolean               @default(false)
+
+  workspaceId String
+  workspace   Workspace             @relation(fields: [workspaceId], references: [id])
+
+  permissions WorkspacePermission[]
+  members     WorkspaceMember[]
+}
+
+model WorkspacePermission {
+  id     String          @id @default(cuid())
+  type   PermissionType
+  roleId String
+  role   WorkspaceRole   @relation(fields: [roleId], references: [id])
+}
+
+
+model OrganizationRole {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  isDefault   Boolean          @default(false)
+  description String?
+
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [id])
+
+  permissions OrgPermission[]
+  members     User[]           // direct relation to User
+}
+
+model OrgPermission {
+  id     String             @id @default(cuid())
+  type   OrgPermissionType
+  roleId String
+  role   OrganizationRole   @relation(fields: [roleId], references: [id])
 }

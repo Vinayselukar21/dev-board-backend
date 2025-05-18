@@ -4,7 +4,8 @@ import { jwtSecret, prisma } from "../index";
 import { comparePassword, hashPassword } from "../utils/hash";
 import { generateTokens } from "../utils/generateTokens";
 import { accessCookieMaxAge, refreshCookieMaxAge } from "../utils/cookieMaxAge";
-import { User } from "@prisma/client";
+import { Organization, User } from "@prisma/client";
+import { seedOrganizationDefaultRoles } from "../utils/seed-organization-default-roles";
 
 export function login(req: Request, res: Response) {
   const { email, password } = req.body;
@@ -85,7 +86,7 @@ export function login(req: Request, res: Response) {
 }
 
 export async function register(req: Request, res: Response) {
-  const { name, email, password, role, contactNo, location, organizationName, organizationType} = req.body;
+  const { name, email, password, role, contactNo, location, organizationName, organizationType, jobTitle, designation } = req.body;
   const hashedPassword = await hashPassword(password);
 
   async function createOrganization(user: User, type: string, name: string) {
@@ -105,6 +106,7 @@ export async function register(req: Request, res: Response) {
         owner: true,
       },
     });
+    
     return organization;
   }
   async function main() {
@@ -116,6 +118,8 @@ export async function register(req: Request, res: Response) {
         location,
         password: hashedPassword,
         role,
+        jobTitle,
+        designation,
       },
       include: {
         organization: true,
@@ -124,9 +128,34 @@ export async function register(req: Request, res: Response) {
     return user;
   }
 
+  async function giveUserOwnerPermission(user: User, organizationId: string) {
+    const orgRoles = await prisma.organizationRole.findMany({
+      where: {
+        organizationId,
+      },
+    });
+    const orgRole = orgRoles.find((role) => role.name === "Owner");
+    if (!orgRole) {
+      return;
+    }
+    await prisma.user.update({
+      where: {
+        id: user.id,
+      },
+      data: {
+        organizationRoleId: orgRole.id,
+      },
+    });
+  }
+
+
   await main()
     .then(async (response) => {
       const organization = await createOrganization(response, organizationType, organizationName);
+
+      console.log("Seeded organization default roles for organization: 1", organization.id);
+      await seedOrganizationDefaultRoles(organization.id);
+      await giveUserOwnerPermission(response, organization.id);
       const tokens = await generateTokens({
         id: response.id,
         email: response.email,

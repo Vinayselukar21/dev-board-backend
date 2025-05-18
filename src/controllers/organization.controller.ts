@@ -3,6 +3,8 @@ import { prisma } from "../index";
 import { CustomRequest } from "../middlewares/verifyAccessToken";
 import log from "../utils/log";
 import { hashPassword } from "../utils/hash";
+import { seedOrganizationDefaultRoles } from "../utils/seed-organization-default-roles";
+import { User } from "../types";
 
 export async function getMyOrganization(req: CustomRequest, res: Response) {
     try {
@@ -11,21 +13,38 @@ export async function getMyOrganization(req: CustomRequest, res: Response) {
                 ownerId: req?.user?.id!,
             },
             include: {
-                owner: true,
+                owner: {
+                    include: {
+                        organizationRole: true,
+                        memberships: {
+                            include: {
+                                workspace: true,
+                                role: true,
+                            },
+                        },
+                    },
+                },
                 users: {
                     include: {
                        memberships: {
                         include: {
                             workspace: true,
+                            role: true,
                         },
                        },
+                       organizationRole: true,
                     },
                 },
                 workspaces: {
                     include: {
                         members: {
                             include: {
-                                user: true,
+                                user: {
+                                    include: {
+                                        organizationRole: true,
+                                    },
+                                },
+                                role: true,
                             },
                         },
                         projects: {
@@ -34,7 +53,11 @@ export async function getMyOrganization(req: CustomRequest, res: Response) {
                                     include:{
                                         member:{
                                             include:{
-                                                user: true,
+                                                user: {
+                                                    include: {
+                                                        organizationRole: true,
+                                                    },
+                                                },
                                             }
                                         }
                                     }
@@ -63,6 +86,8 @@ export async function getMyOrganization(req: CustomRequest, res: Response) {
 
 export async function createOrganization(req: CustomRequest, res: Response) {
     const { name, type } = req.body;
+
+    
     try {
         const organization = await prisma.organization.create({
             data: {
@@ -76,6 +101,9 @@ export async function createOrganization(req: CustomRequest, res: Response) {
                 },
             },
         });
+
+        await seedOrganizationDefaultRoles(organization.id);
+
         res.status(200).json({
             message: "Organization created successfully",
             organization,
@@ -92,7 +120,7 @@ export async function registerAndAddMember(req: CustomRequest, res: Response) {
     name,
     email,
     password,
-    role,
+    roleId,
     workspaceId,
     departmentId,
     contactNo,
@@ -100,6 +128,7 @@ export async function registerAndAddMember(req: CustomRequest, res: Response) {
     organizationId,
     jobTitle,
     designation,
+    organizationRoleId,
   } = req.body;
   const hashedPassword = await hashPassword(password);
 
@@ -117,12 +146,13 @@ export async function registerAndAddMember(req: CustomRequest, res: Response) {
         memberships: workspaceId ? {
           create: {
             workspaceId,
-            role,
-            departmentId,
+            ...(departmentId && { departmentId }),
             organizationId,
+            roleId,
           },
         } : undefined,
         organizationId,
+        organizationRoleId,
       },
       include: {
         memberships: {
@@ -135,6 +165,7 @@ export async function registerAndAddMember(req: CustomRequest, res: Response) {
     });
     return user;
   }
+
 
   try {
     const user = await registerAndAddMember();
@@ -155,4 +186,37 @@ export async function registerAndAddMember(req: CustomRequest, res: Response) {
       message: "Failed to register and add user to workspace",
     });
   }
+}
+
+export async function getAllRoles(req: CustomRequest, res: Response) {
+    const { organizationId, workspaceId } = req.params;
+    try {
+        const workspaceRoles = await prisma.workspaceRole.findMany({
+            where: {
+                workspaceId,
+            },
+            include: {
+                permissions: true,
+            },
+        });
+
+        const organizationRoles = await prisma.organizationRole.findMany({
+            where: {
+                organizationId,
+            },
+            include: {
+                permissions: true,
+            },
+        });
+
+        res.status(200).json({
+            message: "Roles found successfully",
+            workspaceRoles,
+            organizationRoles,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+        return
+    }
 }

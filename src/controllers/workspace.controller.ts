@@ -5,6 +5,7 @@ import { WorkspaceMember } from "@prisma/client";
 import { hashPassword } from "../utils/hash";
 import { CustomRequest } from "../middlewares/verifyAccessToken";
 import log from "../utils/log";
+import { seedWorkspaceDefaultRoles } from "../utils/seed-workspace-default-roles";
 
 export async function workspaceDashboard(req: Request, res: Response) {
   const { workspaceId } = req.params;
@@ -137,6 +138,16 @@ export async function workspaceDashboard(req: Request, res: Response) {
 
 export async function createWorkspace(req: CustomRequest, res: Response) {
   const { icon, name, description, ownerId, organizationId } = req.body as Workspace;
+
+  async function getOwnerRoleId() {
+    const workspaceRole = await prisma.workspaceRole.findUnique({
+      where: {
+        name: "Owner",
+      }
+    });
+    return workspaceRole?.id;
+  }
+
   async function createWorkspace() {
     const workspace = await prisma.workspace.create({
       data: {
@@ -144,12 +155,6 @@ export async function createWorkspace(req: CustomRequest, res: Response) {
         name,
         description,
         ownerId,
-        members: {
-          create: {
-            userId: ownerId,
-            role: "admin",
-          },
-        },
         organizationId,
       },
 
@@ -157,8 +162,28 @@ export async function createWorkspace(req: CustomRequest, res: Response) {
     return workspace;
   }
 
+  async function addOwnerToWorkspace(workspaceId: string) {
+    const ownerRoleId = await getOwnerRoleId();
+    const workspace = await prisma.workspace.update({
+      where: {
+        id: workspaceId,
+      },
+      data: {
+        members: {
+          create: {
+            userId: ownerId,
+            roleId: ownerRoleId!,
+          },
+        },
+      },
+    });
+    return workspace;
+  }
+
   try {
     const workspace = await createWorkspace();
+    await seedWorkspaceDefaultRoles(workspace.id);  
+    await addOwnerToWorkspace(workspace.id);
     log(
       "workspace",
       "create",
