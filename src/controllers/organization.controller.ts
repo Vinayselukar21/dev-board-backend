@@ -188,6 +188,8 @@ export async function registerAndAddMember(req: CustomRequest, res: Response) {
   }
 }
 
+
+// Fetch all roles and permissions list
 export async function getAllRoles(req: CustomRequest, res: Response) {
     const { organizationId, workspaceId } = req.params;
     try {
@@ -209,10 +211,42 @@ export async function getAllRoles(req: CustomRequest, res: Response) {
             },
         });
 
+        const orgPermissions = await prisma.orgPermission.findMany();
+
+        const workspacePermissions = await prisma.workspacePermission.findMany();
+
         res.status(200).json({
             message: "Roles found successfully",
             workspaceRoles,
             organizationRoles,
+            orgPermissions,
+            workspacePermissions,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+        return
+    }
+}
+
+
+
+export async function createCustomRole(req: CustomRequest, res: Response) {
+    const { name, description, permissions, organizationId } = req.body;
+    try {
+        const role = await prisma.organizationRole.create({
+            data: {
+                name,
+                description,
+                permissions: {
+                    create: permissions,
+                },
+                organizationId,
+            },
+        });
+        res.status(200).json({
+            message: "Role created successfully",
+            role,
         });
     } catch (error) {
         console.error(error);

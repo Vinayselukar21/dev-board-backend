@@ -13,6 +13,9 @@ async function main( organizationId: string) {
         create: [
           { type: OrgPermissionType.OWNER },
           { type: OrgPermissionType.VIEW_ORG },
+          { type: OrgPermissionType.EDIT_ORG },
+          { type: OrgPermissionType.DELETE_ORG },
+          
           { type: OrgPermissionType.ONBOARD_USER },
           { type: OrgPermissionType.REMOVE_USER },
           { type: OrgPermissionType.CHANGE_USER_ROLE },

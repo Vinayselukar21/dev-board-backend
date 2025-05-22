@@ -225,6 +225,7 @@ export async function getWorkspaces(req: CustomRequest, res: Response) {
         members: {
           include: {
             user: true,
+            role: true,
           },
         },
         projects: true,
@@ -254,6 +255,38 @@ export async function getWorkspaceById(req: Request, res: Response) {
     const workspace = await prisma.workspace.findUnique({
       where: {
         id: workspaceId,
+      },
+      include: {
+        members: {
+          include: {
+            user: true,
+            role: true,
+          },
+        },
+        projects: {
+          include: {
+            members: {
+              include: {
+                member: {
+                  include: {
+                    user: true,
+                    role: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        departments: true,
+        logs: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 50,
+        },
+        calendarEvents: true,
+        roles: true,
+        organization: true,
       },
     });
     return workspace;
@@ -358,13 +391,13 @@ export async function getWorkspaceProjects(req: Request, res: Response) {
 
 export async function addWorkspaceMember(req: CustomRequest, res: Response) {
   const { workspaceId } = req.params;
-  const { userIds, role, departmentId } = req.body;
+  const { userIds, roleId, departmentId } = req.body;
   async function addWorkspaceMember() {
     const workspaceMember = await prisma.workspaceMember.createMany({
       data: userIds.map((userId: string) => ({
         userId,
         workspaceId,
-        role,
+        roleId,
         departmentId,
       })),
       skipDuplicates: true,
@@ -492,6 +525,7 @@ export async function getWorkspaceMembers(req: Request, res: Response) {
             project: true,
           },
         },
+        role: true
       },
     });
     return members;
@@ -835,6 +869,34 @@ export async function cancelCalendarEvent(req: CustomRequest, res:Response){
     res.status(500).json({
       message: "Failed to cancel calendar event",
       error,
+    });
+  }
+}
+
+export async function getWorkspaceSettings(req: CustomRequest, res: Response){
+  const {workspaceId} = req.params;
+
+  // async function getWorkspaceSettings(){
+  //   const workspaceSettings = await prisma.workspaceSettings.findUnique({
+  //     where: {
+  //       workspaceId: workspaceId,
+  //     },
+  //   });
+  //   return workspaceSettings;
+  // }
+
+
+
+  try {
+    // const workspaceSettings = await getWorkspaceSettings();
+    res.status(200).json({
+      message: "Workspace settings found successfully",
+      // workspaceSettings,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to get workspace settings",
     });
   }
 }

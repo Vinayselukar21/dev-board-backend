@@ -19,6 +19,7 @@ import {
   editCalendarEvent,
   deleteCalendarEvent,
   cancelCalendarEvent,
+  getWorkspaceSettings
 } from "../controllers/workspace.controller";
 import verifyAccessToken from "../middlewares/verifyAccessToken";
 
@@ -45,7 +46,8 @@ router.get("/:workspaceId/member/:memberId", verifyAccessToken, getWorkspaceMemb
 // Owener registers a user and add new member to workspace
 // router.post("/registerandaddmember", verifyAccessToken, registerAndAddMember);
 
-
+// Settings Routes
+router.get("/:workspaceId/settings", verifyAccessToken, getWorkspaceSettings);
 
 // Department Routes
 router.post("/newdepartment", verifyAccessToken, createDepartment); // create a new department
