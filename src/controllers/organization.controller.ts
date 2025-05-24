@@ -138,7 +138,6 @@ export async function registerAndAddMember(req: CustomRequest, res: Response) {
         name,
         email,
         password: hashedPassword,
-        role: "user",
         contactNo,
         location,
         jobTitle,
@@ -198,7 +197,12 @@ export async function getAllRoles(req: CustomRequest, res: Response) {
                 workspaceId,
             },
             include: {
-                permissions: true,
+                permissions: {
+                    include: {
+                        permission: true,
+                    },
+                },
+                members: true,
             },
         });
 
@@ -207,13 +211,26 @@ export async function getAllRoles(req: CustomRequest, res: Response) {
                 organizationId,
             },
             include: {
-                permissions: true,
+                permissions: {
+                    include: {
+                        permission: true,
+                    },
+                },
+                members: true,
             },
         });
 
-        const orgPermissions = await prisma.orgPermission.findMany();
+        const orgPermissions = await prisma.orgPermission.findMany({
+            where: {
+                organizationId,
+            },
+        });
 
-        const workspacePermissions = await prisma.workspacePermission.findMany();
+        const workspacePermissions = await prisma.workspacePermission.findMany({
+            where: {
+                organizationId,
+            },
+        });
 
         res.status(200).json({
             message: "Roles found successfully",
@@ -231,6 +248,7 @@ export async function getAllRoles(req: CustomRequest, res: Response) {
 
 
 
+
 export async function createCustomRole(req: CustomRequest, res: Response) {
     const { name, description, permissions, organizationId } = req.body;
     try {
@@ -239,7 +257,11 @@ export async function createCustomRole(req: CustomRequest, res: Response) {
                 name,
                 description,
                 permissions: {
-                    create: permissions,
+                    createMany: {
+                        data: permissions.map((permissionId: string) => ({
+                            orgPermissionId: permissionId,
+                        })),
+                    },
                 },
                 organizationId,
             },

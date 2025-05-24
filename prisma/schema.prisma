@@ -24,7 +24,10 @@ model Organization {
   ownerId String   @unique
   owner   User     @relation("OrganizationOwner", fields: [ownerId], references: [id])
 
-  roles OrganizationRole[]
+  roles OrganizationRole[] @relation("OrganizationRoles")
+
+  orgWorkspacePermissions WorkspacePermission[] @relation("OrgWorkspacePermissions")
+  orgPermissions OrgPermission[] @relation("OrganizationPermissions")
 
   users     User[]            @relation("OrganizationUsers")
   workspaces Workspace[]      @relation("OrganizationWorkspaces")
@@ -37,7 +40,6 @@ model User {
   email     String   @unique
   name      String?
   password  String
-  role      String   @default("admin")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   contactNo String   @db.VarChar(20) @default("")
@@ -69,7 +71,6 @@ model User {
   organization   Organization? @relation("OrganizationUsers", fields: [organizationId], references: [id])
 }
 
-
 model Workspace {
   id          String   @id @default(cuid())
   icon        String?
@@ -94,7 +95,7 @@ model Workspace {
   
   relationships MemberWorkspaceRelationship[]
 
-  roles WorkspaceRole[]
+  roles WorkspaceRole[]   @relation("WorkspaceRoles")
 
   organizationId String?
   organization Organization? @relation("OrganizationWorkspaces", fields: [organizationId], references: [id]) 
@@ -281,7 +282,6 @@ model CalendarEventParticipant {
   @@unique([calendarEventId, workspaceMemberId])
 }
 
-
 // Roles and Permissions
 
 enum PermissionType {
@@ -325,42 +325,67 @@ enum OrgPermissionType {
 }
 
 model WorkspaceRole {
-  id          String                @id @default(cuid())
-  name        String                @unique // e.g., "Viewer", "Editor", etc.
+  id          String        @id @default(cuid())
+  name        String
   description String?
-  isDefault   Boolean               @default(false)
+  isDefault   Boolean       @default(false)
 
   workspaceId String
-  workspace   Workspace             @relation(fields: [workspaceId], references: [id])
+  workspace   Workspace     @relation("WorkspaceRoles",fields: [workspaceId], references: [id])
 
-  permissions WorkspacePermission[]
+
+  permissions WorkspaceRolePermission[]
   members     WorkspaceMember[]
 }
 
 model WorkspacePermission {
-  id     String          @id @default(cuid())
-  type   PermissionType
-  roleId String
-  role   WorkspaceRole   @relation(fields: [roleId], references: [id])
+  id   String           @id @default(cuid())    // e.g., "VIEW_PROJECT"
+  name String
+  organizationId String?
+  organization Organization? @relation("OrgWorkspacePermissions",fields: [organizationId], references: [id])
+  roles WorkspaceRolePermission[]
 }
 
+model WorkspaceRolePermission {
+  id               String          @id @default(cuid())
+  workspaceRoleId String
+  workspacePermissionId  String
+
+  role  WorkspaceRole @relation(fields: [workspaceRoleId], references: [id])
+  permission    WorkspacePermission   @relation(fields: [workspacePermissionId], references: [id])
+
+  @@unique([workspaceRoleId,workspacePermissionId])
+}
 
 model OrganizationRole {
-  id          String           @id @default(cuid())
-  name        String           @unique
-  isDefault   Boolean          @default(false)
-  description String?
+  id             String            @id @default(cuid())
+  name           String
+  description    String?
+  isDefault      Boolean           @default(false)
 
   organizationId String
-  organization   Organization   @relation(fields: [organizationId], references: [id])
+  organization   Organization      @relation("OrganizationRoles",fields: [organizationId], references: [id])
 
-  permissions OrgPermission[]
-  members     User[]           // direct relation to User
+  permissions OrgRolePermission[]
+  members         User[]
 }
 
 model OrgPermission {
-  id     String             @id @default(cuid())
-  type   OrgPermissionType
-  roleId String
-  role   OrganizationRole   @relation(fields: [roleId], references: [id])
+  id   String              @id @default(cuid())
+  name String
+  organizationId String?
+  organization Organization? @relation("OrganizationPermissions",fields: [organizationId], references: [id])
+
+  roles OrgRolePermission[]
+}
+
+model OrgRolePermission {
+  id               String          @id @default(cuid())
+  organizationRoleId String
+  orgPermissionId  String
+
+  role  OrganizationRole @relation(fields: [organizationRoleId], references: [id])
+  permission    OrgPermission   @relation(fields: [orgPermissionId], references: [id])
+
+  @@unique([orgPermissionId,organizationRoleId])
 }

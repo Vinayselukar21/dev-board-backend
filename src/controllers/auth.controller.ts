@@ -42,7 +42,6 @@ export function login(req: Request, res: Response) {
       id: user.id,
       email: user.email,
       name: user.name,
-      role: user.role,
       lastLogin: new Date().toISOString(),
     });
     // save the refresh token to db - task
@@ -68,7 +67,6 @@ export function login(req: Request, res: Response) {
           email: user.email,
           name: user.name,
           id: user.id,
-          role: user.role,
           createdAt: user.createdAt,
           contactNo: user.contactNo,
           location: user.location,
@@ -117,7 +115,6 @@ export async function register(req: Request, res: Response) {
         contactNo,
         location,
         password: hashedPassword,
-        role,
         jobTitle,
         designation,
       },
@@ -160,7 +157,6 @@ export async function register(req: Request, res: Response) {
         id: response.id,
         email: response.email,
         name: response.name,
-        role: response.role,
         lastLogin: new Date().toISOString(),
       });
       console.log(response);
@@ -186,7 +182,6 @@ export async function register(req: Request, res: Response) {
             email: response.email,
             name: response.name,
             id: response.id,
-            role: response.role,
             createdAt: response.createdAt,
             contactNo: response.contactNo,
             jobTitle: response.jobTitle,
@@ -227,18 +222,16 @@ export async function refresh(req: Request, res: Response) {
   try {
     // validate access token here - task
     const decoded = jwt.verify(token, jwtSecret.refreshToken);
-    const { id, email, name, role, lastLogin } = decoded as {
+    const { id, email, name, lastLogin } = decoded as {
       id: string;
       email: string;
       name: string;
-      role: string;
       lastLogin: string;
     };
     const { accessToken } = await generateTokens({
       id,
       name,
       email,
-      role,
       lastLogin,
     });
 
@@ -269,11 +262,10 @@ export async function me(req: Request, res: Response) {
   }
   try {
     const decoded = jwt.verify(token, jwtSecret.accessToken);
-    const { id, email, name, role } = decoded as {
+    const { id, email, name } = decoded as {
       id: string;
       email: string;
       name: string;
-      role: string;
     };
     const user = await prisma.user.findUnique({
       where: {
@@ -302,7 +294,6 @@ export async function me(req: Request, res: Response) {
         email: user.email,
         name: user.name,
         id: user.id,
-        role: user.role,
         jobTitle: user.jobTitle,
         designation: user.designation,
         createdAt: user.createdAt,

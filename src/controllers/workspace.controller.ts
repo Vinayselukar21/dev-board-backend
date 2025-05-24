@@ -139,13 +139,14 @@ export async function workspaceDashboard(req: Request, res: Response) {
 export async function createWorkspace(req: CustomRequest, res: Response) {
   const { icon, name, description, ownerId, organizationId } = req.body as Workspace;
 
-  async function getOwnerRoleId() {
-    const workspaceRole = await prisma.workspaceRole.findUnique({
+  async function getOwnerRoleId(workspaceId: string) {
+    const workspaceRole = await prisma.workspaceRole.findMany({
       where: {
-        name: "Owner",
+        workspaceId,
       }
     });
-    return workspaceRole?.id;
+    const ownerRole = workspaceRole.find(role => role.name === "Owner");
+    return ownerRole?.id;
   }
 
   async function createWorkspace() {
@@ -163,7 +164,7 @@ export async function createWorkspace(req: CustomRequest, res: Response) {
   }
 
   async function addOwnerToWorkspace(workspaceId: string) {
-    const ownerRoleId = await getOwnerRoleId();
+    const ownerRoleId = await getOwnerRoleId(workspaceId);
     const workspace = await prisma.workspace.update({
       where: {
         id: workspaceId,
@@ -182,7 +183,8 @@ export async function createWorkspace(req: CustomRequest, res: Response) {
 
   try {
     const workspace = await createWorkspace();
-    await seedWorkspaceDefaultRoles(workspace.id);  
+    console.log(workspace, "workspace")
+    await seedWorkspaceDefaultRoles(workspace.id, organizationId!);  
     await addOwnerToWorkspace(workspace.id);
     log(
       "workspace",
@@ -439,76 +441,6 @@ export async function addWorkspaceMember(req: CustomRequest, res: Response) {
     });
   }
 }
-
-// export async function registerAndAddMember(req: CustomRequest, res: Response) {
-//   const {
-//     name,
-//     email,
-//     password,
-//     role,
-//     workspaceId,
-//     departmentId,
-//     contactNo,
-//     location,
-//     organizationId,
-//     jobTitle,
-//     designation,
-//   } = req.body;
-//   const hashedPassword = await hashPassword(password);
-
-//   async function registerAndAddMember() {
-//     const user = await prisma.user.create({
-//       data: {
-//         name,
-//         email,
-//         password: hashedPassword,
-//         role: "user",
-//         contactNo,
-//         location,
-//         jobTitle,
-//         designation,
-//         memberships: {
-//           create: {
-//             workspaceId,
-//             role,
-//             departmentId,
-//             organizationId,
-//           },
-//         },
-//         organizationId,
-//       },
-//       include: {
-//         memberships: {
-//           include: {
-//             workspace: true,
-//           },
-//         },
-//         organization: true,
-//       },
-//     });
-//     return user;
-//   }
-
-//   try {
-//     const user = await registerAndAddMember();
-//     log(
-//       "user",
-//       "create",
-//       `${req?.user?.name} added a new user "${user?.name}" to workspace ${user?.memberships[0]?.workspace?.name}.`,
-//       req.user?.id!,
-//       user?.memberships[0]?.workspace?.id
-//     );
-//     res.status(200).json({
-//       message: "User registered and added to workspace successfully",
-//       user,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({
-//       message: "Failed to register and add user to workspace",
-//     });
-//   }
-// }
 
 export async function getWorkspaceMembers(req: Request, res: Response) {
   const { workspaceId } = req.params;
