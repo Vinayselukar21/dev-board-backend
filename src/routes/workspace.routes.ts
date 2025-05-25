@@ -19,7 +19,8 @@ import {
   editCalendarEvent,
   deleteCalendarEvent,
   cancelCalendarEvent,
-  getWorkspaceSettings
+  getWorkspaceSettings,
+  createCustomWorkspaceRole
 } from "../controllers/workspace.controller";
 import verifyAccessToken from "../middlewares/verifyAccessToken";
 
@@ -59,5 +60,8 @@ router.get("/:workspaceId/:workspaceMemberId/events/getall", verifyAccessToken, 
 router.put("/:workspaceId/event/update", verifyAccessToken, editCalendarEvent); // edit a calendar event
 router.delete("/:workspaceId/events/delete/:eventId", verifyAccessToken, deleteCalendarEvent); // delete a calendar event
 router.put("/:workspaceId/events/cancel/:eventId", verifyAccessToken, cancelCalendarEvent); // cancel a calendar event
+
+// Workspace Role Routes
+router.post("/new/customrole", verifyAccessToken, createCustomWorkspaceRole)
 
 export default router;

@@ -277,6 +277,7 @@ export async function getWorkspaceById(req: Request, res: Response) {
                 },
               },
             },
+            taskStages: true,
           },
         },
         departments: true,
@@ -287,7 +288,16 @@ export async function getWorkspaceById(req: Request, res: Response) {
           take: 50,
         },
         calendarEvents: true,
-        roles: true,
+        roles: {
+          include: {
+            permissions: {
+              include: {
+                permission: true,
+              },
+            },
+            members: true,
+          },
+        },
         organization: true,
       },
     });
@@ -830,5 +840,34 @@ export async function getWorkspaceSettings(req: CustomRequest, res: Response){
     res.status(500).json({
       message: "Failed to get workspace settings",
     });
+  }
+}
+
+
+export async function createCustomWorkspaceRole(req: CustomRequest, res: Response) {
+  const { name, description, permissions, workspaceId } = req.body;
+  try {
+      const role = await prisma.workspaceRole.create({
+          data: {
+              name,
+              description,
+              permissions: {
+                  createMany: {
+                      data: permissions.map((permissionId: string) => ({
+                          workspacePermissionId: permissionId,
+                      })),
+                  },
+              },
+              workspaceId,
+          },
+      });
+      res.status(200).json({
+          message: "Role created successfully",
+          role,
+      });
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Internal server error" });
+      return
   }
 }
