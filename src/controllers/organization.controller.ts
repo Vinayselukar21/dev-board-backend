@@ -276,3 +276,39 @@ export async function createCustomRole(req: CustomRequest, res: Response) {
         return
     }
 }
+
+export async function updateRole(req: CustomRequest, res: Response) {
+    const { name, description, permissions, organizationId, roleId } = req.body;
+    try {
+        const role = await prisma.organizationRole.update({
+            where: {
+                id: roleId,
+                organizationId,
+            },
+            data: {
+                name,
+                description,
+                permissions: {
+                    deleteMany: {
+                        orgPermissionId: {
+                            in: permissions,
+                        },
+                    },
+                    createMany: {
+                        data: permissions.map((permissionId: string) => ({
+                            orgPermissionId: permissionId,
+                        })),
+                    },
+                },
+            },
+        });
+        res.status(200).json({
+            message: "Role updated successfully",
+            role,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
+        return
+    }
+}

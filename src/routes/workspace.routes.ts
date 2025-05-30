@@ -20,7 +20,8 @@ import {
   deleteCalendarEvent,
   cancelCalendarEvent,
   getWorkspaceSettings,
-  createCustomWorkspaceRole
+  createCustomWorkspaceRole,
+  getWorkspaceProjectStats
 } from "../controllers/workspace.controller";
 import verifyAccessToken from "../middlewares/verifyAccessToken";
 
@@ -37,7 +38,8 @@ router.get("/getbyid/:workspaceId", verifyAccessToken, getWorkspaceById); // fet
 
 // Workspace Projects Routes
 router.post("/:workspaceId/newproject", verifyAccessToken, createProject); // create a new project
-router.get("/:workspaceId/getall", verifyAccessToken, getWorkspaceProjects); // fetch all projects in a workspace
+router.get("/:workspaceId/projects/getall", verifyAccessToken, getWorkspaceProjects); // fetch all projects in a workspace
+router.get("/:workspaceId/projects/getall/stats", verifyAccessToken, getWorkspaceProjectStats); // fetch all projects in a workspace
 
 // Workspace Member Routes
 router.post("/:workspaceId/addmember", verifyAccessToken, addWorkspaceMember); // add a new member to a workspace

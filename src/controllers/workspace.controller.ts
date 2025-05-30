@@ -401,6 +401,54 @@ export async function getWorkspaceProjects(req: Request, res: Response) {
   }
 }
 
+export async function getWorkspaceProjectStats(req: Request, res: Response) {
+  const { workspaceId } = req.params;
+  async function getWorkspaceProjectStats() {
+    const projects = await prisma.project.findMany({
+      where: {
+        workspaceId: workspaceId,
+      },
+      include:{
+        members: true,
+        taskStages:{
+          include:{
+            tasks:true
+          }
+        }
+      }
+    });
+    return projects;
+  }
+
+  try {
+    const projects = await getWorkspaceProjectStats();
+    const statsMap = projects ? projects.reduce((acc, {id, ...project}) => {
+      acc[id] = {
+        projectStatus: project.status,
+        membersCount: project.members.length,
+        taskStages: project.taskStages.map((stage) => ({
+          id: stage.id,
+          name: stage.name,
+          createdAt: stage.createdAt,
+          updatedAt: stage.updatedAt,
+          tasksCount: stage.tasks.length,
+        }))
+      };
+      return acc;
+    }, {} as Record<string, any>) : [];
+    console.log(statsMap)
+    res.status(200).json({
+      message: "Project stats found successfully",
+      statsMap,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to get workspace project stats",
+    });
+  }
+}
+
 export async function addWorkspaceMember(req: CustomRequest, res: Response) {
   const { workspaceId } = req.params;
   const { userIds, roleId, departmentId } = req.body;
