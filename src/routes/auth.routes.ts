@@ -6,6 +6,7 @@ import {
   meAll,
   refresh,
   register,
+  resetPassword,
 } from "../controllers/auth.controller";
 import verifyAccessToken from "../middlewares/verifyAccessToken";
 
@@ -16,6 +17,7 @@ router.post("/register", register);
 router.get("/refresh", refresh);
 router.post("/logout", logout);
 router.get("/me", verifyAccessToken, me);
-router.get("/me/:workspaceMemberId/all", meAll);
+router.get("/me/:workspaceMemberId/all", verifyAccessToken, meAll);
+router.post("/reset-password", verifyAccessToken, resetPassword);
 
 export default router;

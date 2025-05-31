@@ -6,6 +6,7 @@ import { generateTokens } from "../utils/generateTokens";
 import { accessCookieMaxAge, refreshCookieMaxAge } from "../utils/cookieMaxAge";
 import { Organization, User } from "@prisma/client";
 import { seedOrganizationDefaultRoles } from "../utils/seed-organization-default-roles";
+import { CustomRequest } from "../middlewares/verifyAccessToken";
 
 export function login(req: Request, res: Response) {
   const { email, password } = req.body;
@@ -402,8 +403,47 @@ export function forgotPassword(req: Request, res: Response) {
   res.send("Forgot Password");
 }
 
-export function resetPassword(req: Request, res: Response) {
-  res.send("Reset Password");
+export async function resetPassword(req: CustomRequest, res: Response) {
+  const { currentPassword, newPassword } = req.body;
+  const id = req.user?.id;
+  console.log(id, currentPassword, newPassword)
+  async function getUser() {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+    return user;
+  }
+
+  try {
+    const user = await getUser();
+    if (!user) {
+      res.status(400).json({ message: "User not found" });
+      return;
+    }
+    const isPasswordMatch = await comparePassword(currentPassword, user.password);
+    if (!isPasswordMatch) {
+      res.status(400).json({ message: "Invalid password" });
+      return;
+    }
+    const hashedPassword = await hashPassword(newPassword);
+    await prisma.user.update({
+      where: {
+        id: id!,
+      },
+      data: {
+        password: hashedPassword,
+      },
+    });
+    res.status(200).json({ message: "Password reset successful" });
+    return;
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to reset password" });
+    return;
+  }
+
 }
 
 export function verifyEmail(req: Request, res: Response) {
