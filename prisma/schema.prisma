@@ -55,7 +55,6 @@ model User {
   memberships     WorkspaceMember[]
 
   // Task relations
-  assignedTasks Task[] @relation("AssignedTasks")
   Project        Project[]
   Task           Task[]
   logs           Log[] @relation("UserLogs")
@@ -149,6 +148,8 @@ model ProjectMember {
 
   assignedAt      DateTime         @default(now())
 
+  assignedTasks Task[] @relation("AssignedTasks")
+
   @@unique([projectId, memberId]) // Optional: Prevent duplicate entries
 }
 
@@ -209,7 +210,7 @@ model Task {
   createdBy   User   @relation(fields: [createdById], references: [id])
   createdById String
 
-  assignees User[] @relation("AssignedTasks")
+  assignees ProjectMember[] @relation("AssignedTasks")
 }
 
 model Department {

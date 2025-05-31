@@ -13,7 +13,11 @@ export async function getProjectById(req: Request, res: Response) {
       include: {
         taskStages: {
           include: {
-            tasks: true,
+            tasks: {
+              include: {
+                assignees: true,
+              },
+            },
           },
         },
         createdBy: true,
@@ -169,6 +173,7 @@ export async function createTask(req: CustomRequest, res: Response) {
     dueDate,
     stageId,
     createdById,
+    assignees,
   } = req.body;
   async function createTask() {
     const task = await prisma.task.create({
@@ -181,6 +186,11 @@ export async function createTask(req: CustomRequest, res: Response) {
         projectId,
         stageId,
         createdById,
+        assignees: {
+          connect: assignees.map((id: string) => ({
+            id,
+          })),
+        },
       },
       include: {
         project: true,
@@ -211,7 +221,7 @@ export async function createTask(req: CustomRequest, res: Response) {
 }
 
 export async function updateTask(req: CustomRequest, res: Response) {
-  const { taskId, title, description, status, priority, dueDate, stageId } = req.body;
+  const { taskId, title, description, status, priority, dueDate, stageId, assignees } = req.body;
   async function updateTask() {
     const task = await prisma.task.update({
       where: {
@@ -224,6 +234,11 @@ export async function updateTask(req: CustomRequest, res: Response) {
         priority,
         dueDate,
         stageId,
+        assignees: {
+          set: assignees.map((id: string) => ({
+            id,
+          })),
+        },
       },
       include: {
         project: true,
@@ -261,7 +276,11 @@ export async function getAllTasksForProject(req: Request, res: Response) {
         projectId,
       },
       include: {
-        tasks: true,
+        tasks: {
+          include: {
+            assignees: true,
+          }
+        },
       },
     });
     return tasks;
