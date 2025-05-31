@@ -205,8 +205,8 @@ export interface CalendarEvent {
   date: string;
   time: string;
   endTime: string;
-  occurence: 'single' | 'recurring-weekly' | 'recurring-monthly';
-  type: 'event' | 'meeting' | 'task';
+  occurence: 'single' | 'recurring';
+  type: 'event' | 'meeting';
   location?: string;
   status: 'active' | 'cancelled';
 
