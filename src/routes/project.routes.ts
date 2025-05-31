@@ -9,7 +9,8 @@ import {
   getProjectById,
   changeTaskStage,
   deleteTask,
-  getProjectLogs
+  getProjectLogs,
+  updateTask
 } from "../controllers/project.controllers";
 
 const router = Router();
@@ -29,6 +30,8 @@ router.post("/newstage", verifyAccessToken, createTaskStage);
 
 // Project Tasks Routes
 router.post("/newtask", verifyAccessToken, createTask);
+router.put("/updatetask", verifyAccessToken, updateTask);
+
 router.get("/:projectId/tasks", verifyAccessToken, getAllTasksForProject);
 router.put("/taskstagechange", verifyAccessToken, changeTaskStage);
 // router.get("/:id/task/:taskId", verifyAccessToken, getTask);

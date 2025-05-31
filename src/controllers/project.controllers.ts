@@ -210,6 +210,49 @@ export async function createTask(req: CustomRequest, res: Response) {
   }
 }
 
+export async function updateTask(req: CustomRequest, res: Response) {
+  const { taskId, title, description, status, priority, dueDate, stageId } = req.body;
+  async function updateTask() {
+    const task = await prisma.task.update({
+      where: {
+        id: taskId,
+      },
+      data: {
+        title,
+        description,
+        status,
+        priority,
+        dueDate,
+        stageId,
+      },
+      include: {
+        project: true,
+      },
+    });
+    return task;
+  }
+
+  try {
+    const task = await updateTask();
+    log(
+      "task",
+      "update",
+      `${req?.user?.name} updated a task "${task?.title}" in project ${task?.project?.name}.`,
+      req.user?.id!,
+      task?.project?.workspaceId
+    );
+    res.status(200).json({
+      message: "Task updated successfully",
+      task,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to update task",
+    });
+  }
+}
+
 export async function getAllTasksForProject(req: Request, res: Response) {
   const { projectId } = req.params;
   async function tasksByStage() {
