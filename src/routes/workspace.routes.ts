@@ -14,7 +14,6 @@ import {
   getWorkspaceProjects,
   getWorkspaces,
   // registerAndAddMember,
-  getWorkspaceMemberById,
   workspaceDashboard,
   editCalendarEvent,
   deleteCalendarEvent,
@@ -38,13 +37,12 @@ router.get("/getbyid/:workspaceId", verifyAccessToken, getWorkspaceById); // fet
 
 // Workspace Projects Routes
 router.post("/:workspaceId/newproject", verifyAccessToken, createProject); // create a new project
-router.get("/:workspaceId/projects/getall", verifyAccessToken, getWorkspaceProjects); // fetch all projects in a workspace
-router.get("/:workspaceId/projects/getall/stats", verifyAccessToken, getWorkspaceProjectStats); // fetch all projects in a workspace
+router.get("/:workspaceId/:workspaceMemberId/projects/getall", verifyAccessToken, getWorkspaceProjects); // fetch all projects in a workspace
+router.get("/:workspaceId/:workspaceMemberId/projects/getall/stats", verifyAccessToken, getWorkspaceProjectStats); // fetch all projects in a workspace
 
 // Workspace Member Routes
 router.post("/:workspaceId/addmember", verifyAccessToken, addWorkspaceMember); // add a new member to a workspace
 router.get("/:workspaceId/members", verifyAccessToken, getWorkspaceMembers); // fetch all members in a workspace
-router.get("/:workspaceId/member/:memberId", verifyAccessToken, getWorkspaceMemberById); // fetch all members in a workspace
 
 // Owener registers a user and add new member to workspace
 // router.post("/registerandaddmember", verifyAccessToken, registerAndAddMember);

@@ -314,6 +314,90 @@ export async function me(req: Request, res: Response) {
   }
 }
 
+export async function meAll(req: Request, res: Response) {
+  const { workspaceMemberId } = req.params;
+  const token = req.cookies.access_token;
+  if (!token) {
+    res.sendStatus(401);
+    return;
+  }
+  try {
+    const decoded = jwt.verify(token, jwtSecret.accessToken);
+    const { id, email, name } = decoded as {
+      id: string;
+      email: string;
+      name: string;
+    };
+    const user = await prisma.user.findUnique({
+      where: {
+        email: email,
+        id: id,
+      },
+      include: {
+        memberships: {
+          where: {
+            id: workspaceMemberId,
+          },
+          include: {
+            role: true,
+            workspace: {
+              include: {
+                members:{
+                  where:{
+                    id: workspaceMemberId,
+                  },
+                  include:{
+                    projects:{
+                      include:{
+                        project:true,
+                      }
+                    },
+                  },
+                }
+              },
+            },
+          },
+        },
+        ownedOrganization: {
+          include: {
+            owner: true,
+            users: true,
+          },
+        },
+        organization: true,
+        ownedWorkspaces: true,
+      },
+    });
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+    res.status(200).json({
+      message: "User found",
+      user: {
+        email: user.email,
+        name: user.name,
+        id: user.id,
+        jobTitle: user.jobTitle,
+        designation: user.designation,
+        createdAt: user.createdAt,
+        contactNo: user.contactNo,
+        location: user.location,
+        memberships: user.memberships,
+        organizationId: user.organizationId,
+        organization: user.organization,
+        ownedWorkspaces: user.ownedWorkspaces,
+        ownedOrganization: user.ownedOrganization,
+      },
+      authStatus: "authenticated",
+    });
+    return;
+  } catch (err) {
+    res.sendStatus(401);
+    return;
+  }
+}
+
 export function forgotPassword(req: Request, res: Response) {
   res.send("Forgot Password");
 }

@@ -377,11 +377,16 @@ export async function createProject(req: CustomRequest, res: Response) {
 }
 
 export async function getWorkspaceProjects(req: Request, res: Response) {
-  const { workspaceId } = req.params;
+  const { workspaceId, workspaceMemberId } = req.params;
   async function getWorkspaceProjects() {
     const projects = await prisma.project.findMany({
       where: {
         workspaceId: workspaceId,
+        members: {
+          some: {
+            memberId: workspaceMemberId,
+          },
+        },
       },
     });
     return projects;
@@ -402,11 +407,16 @@ export async function getWorkspaceProjects(req: Request, res: Response) {
 }
 
 export async function getWorkspaceProjectStats(req: Request, res: Response) {
-  const { workspaceId } = req.params;
+  const { workspaceId, workspaceMemberId } = req.params;
   async function getWorkspaceProjectStats() {
     const projects = await prisma.project.findMany({
       where: {
         workspaceId: workspaceId,
+        members: {
+          some: {
+            memberId: workspaceMemberId,
+          },
+        },
       },
       include:{
         members: true,
@@ -532,41 +542,6 @@ export async function getWorkspaceMembers(req: Request, res: Response) {
     console.error(error);
     res.status(500).json({
       message: "Failed to get workspace members",
-    });
-  }
-}
-
-export async function getWorkspaceMemberById(req: Request, res: Response) {
-  const { workspaceId, memberId } = req.params;
-  async function getMember() {
-    const workspaceMember = await prisma.workspaceMember.findUnique({
-      where: {
-        id: memberId,
-        workspaceId: workspaceId,
-      },
-      include: {
-        user: true,
-        department: true,
-        projects: {
-          include: {
-            project: true,
-          },
-        },
-      },
-    });
-    return workspaceMember;
-  }
-
-  try {
-    const workspaceMember = await getMember();
-    res.status(200).json({
-      message: "Workspace member found successfully",
-      workspaceMember,
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: "Failed to get workspace member by id",
     });
   }
 }

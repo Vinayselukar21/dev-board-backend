@@ -3,6 +3,7 @@ import {
   login,
   logout,
   me,
+  meAll,
   refresh,
   register,
 } from "../controllers/auth.controller";
@@ -15,5 +16,6 @@ router.post("/register", register);
 router.get("/refresh", refresh);
 router.post("/logout", logout);
 router.get("/me", verifyAccessToken, me);
+router.get("/me/:workspaceMemberId/all", meAll);
 
 export default router;
