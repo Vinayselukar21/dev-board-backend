@@ -625,6 +625,7 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
       },
       include: {
         participants: true,
+        series: true,
       },
     });
   
