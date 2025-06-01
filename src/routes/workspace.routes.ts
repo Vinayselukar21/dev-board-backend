@@ -20,7 +20,8 @@ import {
   cancelCalendarEvent,
   getWorkspaceSettings,
   createCustomWorkspaceRole,
-  getWorkspaceProjectStats
+  getWorkspaceProjectStats,
+  createCalendarEventSeries
 } from "../controllers/workspace.controller";
 import verifyAccessToken from "../middlewares/verifyAccessToken";
 
@@ -56,7 +57,8 @@ router.get("/:workspaceId/getall", verifyAccessToken, getDepartments); // fetch 
 
 // Calendar Event Routes
 router.post("/:workspaceId/newevent", verifyAccessToken, createCalendarEvent); // create a new calendar event
-router.get("/:workspaceId/:workspaceMemberId/events/getall", verifyAccessToken, getCalendarEvents); // fetch all calendar events in a workspace
+router.post("/:workspaceId/neweventseries", verifyAccessToken, createCalendarEventSeries); // create a new calendar event series
+router.get("/:workspaceId/:workspaceMemberId/events/getall/:month/:year", verifyAccessToken, getCalendarEvents); // fetch all calendar events in a workspace
 router.put("/:workspaceId/event/update", verifyAccessToken, editCalendarEvent); // edit a calendar event
 router.delete("/:workspaceId/events/delete/:eventId", verifyAccessToken, deleteCalendarEvent); // delete a calendar event
 router.put("/:workspaceId/events/cancel/:eventId", verifyAccessToken, cancelCalendarEvent); // cancel a calendar event

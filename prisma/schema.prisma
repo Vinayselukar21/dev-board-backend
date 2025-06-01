@@ -245,6 +245,15 @@ model Log {
   organization Organization? @relation("OrganizationLogs", fields: [organizationId], references: [id])
 }
 
+model CalendarEventSeries {
+  id          String   @id @default(cuid())
+
+  seriesTitle String? @default("")
+  seriesDescription String? @default("")
+
+  calendarEvents CalendarEvent[] @relation("CalendarEventSeries")
+}
+
 model CalendarEvent {
   id          String   @id @default(cuid())
   title       String
@@ -265,6 +274,9 @@ model CalendarEvent {
 
   workspaceId String
   workspace   Workspace @relation("WorkspaceCalendarEvents", fields: [workspaceId], references: [id])
+
+  seriesId String?
+  series CalendarEventSeries? @relation("CalendarEventSeries", fields: [seriesId], references: [id])
 
   participants CalendarEventParticipant[] // ← Intermediate table
 

@@ -608,23 +608,29 @@ export async function getDepartments(req: Request, res: Response) {
 }
 
 export async function getCalendarEvents(req: CustomRequest, res: Response) {
-  const { workspaceId, workspaceMemberId } = req.params;
+  const { workspaceId, workspaceMemberId, month, year } = req.params;
   async function getCalendarEvents() {
+    // JS months are 0-based, so month - 1
+    const startDate = new Date(Date.UTC(Number(year), Number(month) - 1, 1));
+    const endDate = new Date(Date.UTC(Number(year), Number(month), 1)); // First day of next month
+  
     const calendarEvents = await prisma.calendarEvent.findMany({
       where: {
         workspaceId: workspaceId,
         participants: {
-          some:{
+          some: {
             workspaceMemberId: workspaceMemberId,
-          }
+          },
         },
       },
       include: {
         participants: true,
       },
     });
+  
     return calendarEvents;
   }
+  
 
   try {
     const calendarEvents = await getCalendarEvents();
@@ -705,6 +711,63 @@ export async function createCalendarEvent(req: CustomRequest, res: Response) {
   }
 }
 
+export async function createCalendarEventSeries(req: CustomRequest, res: Response){
+  const { workspaceId } = req.params;
+  const {occurrence , participants, seriesTitle, seriesDescription} = req.body;
+
+  async function createCalendarEventSeries(){
+    const calendarEventSeries = await prisma.calendarEventSeries.create({
+      data: {
+        seriesTitle,
+        seriesDescription,
+      }
+    })
+    return calendarEventSeries;
+  }
+
+  async function createCalendarEvents(calendarEventSeriesId: string){
+    for (const occ of occurrence) {
+      const calendarEvent = await prisma.calendarEvent.create({
+        data: {
+          title: occ.title,
+          description: occ.description,
+          date: occ.date,
+          time: occ.time,
+          endTime: occ.endTime,
+          type: occ.type,
+          workspaceId: workspaceId,
+          projectId: occ.projectId,
+          occurence: occ.occurence,
+          status: occ.status,
+          location: occ.location,
+          createdById: occ.createdById,
+          seriesId: calendarEventSeriesId,
+          participants: {
+            createMany: {
+              data: participants.map((id: string) => ({
+                workspaceMemberId: id,
+              })),
+            },
+          },
+        },
+      });
+    }
+  }
+
+  try {
+    const calendarEventSeries = await createCalendarEventSeries();
+    await createCalendarEvents(calendarEventSeries.id);
+    res.status(200).json({
+      message: "Calendar event series created successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to create calendar event series",
+      error,
+    });
+  }
+}
 
 export async function editCalendarEvent(req: CustomRequest, res: Response) {
   const { workspaceId } = req.params;
