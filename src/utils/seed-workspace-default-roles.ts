@@ -66,7 +66,9 @@ async function AddWorkspacePermissions(organizationId: string) {
       PermissionType.REMOVE_MEMBER,
       PermissionType.VIEW_PROJECT,
       PermissionType.VIEW_TASK,
-
+      PermissionType.CREATE_CUSTOM_WORKSPACE_ROLE,
+      PermissionType.EDIT_CUSTOM_WORKSPACE_ROLE,
+      PermissionType.DELETE_CUSTOM_WORKSPACE_ROLE
     ];
   
     await prisma.workspacePermission.createMany({
@@ -147,88 +149,3 @@ export async function seedWorkspaceDefaultRoles(workspaceId: string, organizatio
   const mappedPermissions = await mapPermissionWithRoles(workspaceId, organizationId)
   console.log("Permissions mapped with roles successfully", mappedPermissions, "workspaceId", workspaceId)
 }
-
-//   {
-//     name: 'Owner',
-//     isDefault: false,
-//     workspaceId,
-//     description: 'Full control over workspace',
-//     permissions: {
-//       create: [
-//         { type: PermissionType.ALL_PROJECT },
-//         { type: PermissionType.CREATE_PROJECT },
-//         { type: PermissionType.EDIT_PROJECT },
-//         { type: PermissionType.DELETE_PROJECT },
-
-//         { type: PermissionType.ALL_TASK },
-//         { type: PermissionType.CREATE_TASK },
-//         { type: PermissionType.EDIT_ANY_TASK },
-//         { type: PermissionType.DELETE_TASK },
-
-//         { type: PermissionType.ADD_MEMBER },
-//         { type: PermissionType.REMOVE_MEMBER },
-//         { type: PermissionType.CHANGE_MEMBER_ROLE },
-
-//         { type: PermissionType.CREATE_EVENT },
-//         { type: PermissionType.EDIT_EVENT },
-//         { type: PermissionType.EDIT_ANY_EVENT },
-//         { type: PermissionType.DELETE_EVENT },
-//       ],
-//     },
-//   },
-//   {
-//     name: 'Admin',
-//     isDefault: false,
-//     workspaceId,
-//     description: 'Manage projects and tasks, moderate members',
-//     permissions: {
-//       create: [
-//         { type: PermissionType.CREATE_PROJECT },
-//         { type: PermissionType.EDIT_PROJECT },
-//         { type: PermissionType.DELETE_PROJECT },
-
-//         { type: PermissionType.CREATE_TASK },
-//         { type: PermissionType.EDIT_ANY_TASK },
-//         { type: PermissionType.DELETE_TASK },
-
-//         { type: PermissionType.ADD_MEMBER },
-//         { type: PermissionType.REMOVE_MEMBER },
-//         { type: PermissionType.CHANGE_MEMBER_ROLE },
-
-//         { type: PermissionType.CREATE_EVENT },
-//         { type: PermissionType.EDIT_EVENT },
-//         { type: PermissionType.EDIT_ANY_EVENT },
-//         { type: PermissionType.DELETE_EVENT },
-//       ],
-//     },
-//   },
-//   {
-//     name: 'Member',
-//     isDefault: false,
-//     workspaceId,
-//     description: 'Can view and edit assigned projects and tasks',
-//     permissions: {
-//       create: [
-//         { type: PermissionType.VIEW_PROJECT },
-//         { type: PermissionType.CREATE_TASK },
-//         { type: PermissionType.EDIT_PROJECT },
-//         { type: PermissionType.EDIT_ANY_TASK },
-
-//         { type: PermissionType.CREATE_EVENT },
-//         { type: PermissionType.EDIT_EVENT },
-//       ],
-//     },
-//   },
-//   {
-//     name: 'Viewer',
-//     isDefault: true,
-//     workspaceId,
-//     description: 'Read-only access to all workspace data',
-//     permissions: {
-//       create: [
-//         { type: PermissionType.VIEW_PROJECT },
-//         { type: PermissionType.VIEW_TASK },
-//       ],
-//     },
-//   },
-// ];

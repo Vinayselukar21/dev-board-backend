@@ -1,10 +1,10 @@
-import { Request, Response } from "express";
+import { Response } from "express";
 import { prisma } from "../index";
 import { CustomRequest } from "../middlewares/verifyAccessToken";
-import log from "../utils/log";
+import { OrgPermissionType } from "../types";
 import { hashPassword } from "../utils/hash";
+import log from "../utils/log";
 import { seedOrganizationDefaultRoles } from "../utils/seed-organization-default-roles";
-import { User } from "../types";
 
 export async function getMyOrganization(req: CustomRequest, res: Response) {
     try {
@@ -86,7 +86,12 @@ export async function getMyOrganization(req: CustomRequest, res: Response) {
 
 export async function createOrganization(req: CustomRequest, res: Response) {
     const { name, type } = req.body;
+    const {orgPermissions} = req.user!
 
+    if (!orgPermissions.includes(OrgPermissionType.OWNER)) {
+        res.status(400).json({ message: "You are not authorized to create an organization" });
+        return
+    }
     
     try {
         const organization = await prisma.organization.create({
@@ -130,6 +135,13 @@ export async function registerAndAddMember(req: CustomRequest, res: Response) {
     designation,
     organizationRoleId,
   } = req.body;
+  const {orgPermissions} = req.user!
+
+  if (!orgPermissions.includes(OrgPermissionType.ONBOARD_USER)) {
+    res.status(400).json({ message: "You are not authorized to onboard a user" });
+    return
+  }
+
   const hashedPassword = await hashPassword(password);
 
   async function registerAndAddMember() {
@@ -186,7 +198,6 @@ export async function registerAndAddMember(req: CustomRequest, res: Response) {
     });
   }
 }
-
 
 // Fetch all roles and permissions list
 export async function getAllRoles(req: CustomRequest, res: Response) {
@@ -246,11 +257,14 @@ export async function getAllRoles(req: CustomRequest, res: Response) {
     }
 }
 
-
-
-
 export async function createCustomRole(req: CustomRequest, res: Response) {
     const { name, description, permissions, organizationId } = req.body;
+    const {orgPermissions} = req.user!
+
+    if (!orgPermissions.includes(OrgPermissionType.CREATE_CUSTOM_ORG_ROLE)) {
+        res.status(400).json({ message: "You are not authorized to create a custom role" });
+        return
+    }
     try {
         const role = await prisma.organizationRole.create({
             data: {
@@ -279,6 +293,12 @@ export async function createCustomRole(req: CustomRequest, res: Response) {
 
 export async function updateRole(req: CustomRequest, res: Response) {
     const { name, description, permissions, organizationId, roleId } = req.body;
+    const {orgPermissions} = req.user!
+
+    if (!orgPermissions.includes(OrgPermissionType.EDIT_CUSTOM_ORG_ROLE)) {
+        res.status(400).json({ message: "You are not authorized to update a custom role" });
+        return
+    }
     try {
         const role = await prisma.organizationRole.update({
             where: {

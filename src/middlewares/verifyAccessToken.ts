@@ -9,6 +9,12 @@ interface JwtPayload {
   name: string;
   email: string;
   lastLogin: string;
+  orgPermissions: string[];
+  workspacePermissions: {
+    workspaceName: string;
+    workspaceId: string;
+    permissions: string[];
+  }[];
 }
 
 export interface CustomRequest extends Request {
@@ -32,8 +38,10 @@ const verifyAccessToken = (
       process.env.ACCESS_TOKEN_SECRET!
     ) as JwtPayload;
     req.user = decoded;
+    console.log(decoded, "decoded token")
     next();
   } catch (err) {
+    console.log(err, "error in verifyAccessToken")
     res.sendStatus(403);
     return;
   }

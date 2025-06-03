@@ -2,8 +2,7 @@ import { Router } from "express";
 import {
   addWorkspaceMember,
   createDepartment,
-  createCalendarEvent,
-  getCalendarEvents,
+  
   // Workspace Projects Related
   createProject,
   // Workspace Related
@@ -15,15 +14,17 @@ import {
   getWorkspaces,
   // registerAndAddMember,
   workspaceDashboard,
-  editCalendarEvent,
-  deleteCalendarEvent,
-  cancelCalendarEvent,
   getWorkspaceSettings,
   createCustomWorkspaceRole,
   getWorkspaceProjectStats,
   createCalendarEventSeries
 } from "../controllers/workspace.controller";
 import verifyAccessToken from "../middlewares/verifyAccessToken";
+
+import { editCalendarEvent,
+  deleteCalendarEvent,createCalendarEvent,
+  getCalendarEvents,
+  cancelCalendarEvent, } from "../controllers/workspace.controller"
 
 const router = Router();
 

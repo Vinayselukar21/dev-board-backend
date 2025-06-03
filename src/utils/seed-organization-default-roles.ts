@@ -61,7 +61,9 @@ async function addOrgPermissions(organizationId: string) {
       OrgPermissionType.CREATE_WORKSPACE,
       OrgPermissionType.EDIT_WORKSPACE,
       OrgPermissionType.DELETE_WORKSPACE,
-
+      OrgPermissionType.CREATE_CUSTOM_ORG_ROLE,
+      OrgPermissionType.EDIT_CUSTOM_ORG_ROLE,
+      OrgPermissionType.DELETE_CUSTOM_ORG_ROLE
     ];
   
     const permissions = await prisma.orgPermission.createMany({
@@ -89,8 +91,8 @@ async function mapPermissionWithRoles(organizationId: string) {
   })
 
   const roleMap = {
-    owner:  ['OWNER', 'VIEW_ORG','EDIT_ORG','DELETE_ORG','ONBOARD_USER','REMOVE_USER','CHANGE_USER_ROLE','VIEW_WORKSPACE','CREATE_WORKSPACE','EDIT_WORKSPACE','DELETE_WORKSPACE'],
-    admin:  ['VIEW_ORG','ONBOARD_USER','REMOVE_USER','CHANGE_USER_ROLE','VIEW_WORKSPACE','CREATE_WORKSPACE','EDIT_WORKSPACE','DELETE_WORKSPACE'],
+    owner:  ['OWNER', 'VIEW_ORG','EDIT_ORG','DELETE_ORG','ONBOARD_USER','REMOVE_USER','CHANGE_USER_ROLE','VIEW_WORKSPACE','CREATE_WORKSPACE','EDIT_WORKSPACE','DELETE_WORKSPACE','CREATE_CUSTOM_ORG_ROLE','EDIT_CUSTOM_ORG_ROLE','DELETE_CUSTOM_ORG_ROLE'],
+    admin:  ['VIEW_ORG','ONBOARD_USER','REMOVE_USER','CHANGE_USER_ROLE','VIEW_WORKSPACE','CREATE_WORKSPACE','EDIT_WORKSPACE','DELETE_WORKSPACE','CREATE_CUSTOM_ORG_ROLE','EDIT_CUSTOM_ORG_ROLE','DELETE_CUSTOM_ORG_ROLE'],
     member: ['VIEW_ORG','VIEW_WORKSPACE'],
     viewer: ['VIEW_ORG','VIEW_WORKSPACE'],
   }
@@ -145,74 +147,3 @@ export async function seedOrganizationDefaultRoles(organizationId: string) {
   const mapedRole = await mapPermissionWithRoles(organizationId)
   console.log("Org Permissions mapped with roles successfully", mapedRole)
 }
-//   console.log(data)
-// })
-
-// const orgRolesData = [
-//   {
-//     name: 'Owner',
-//     isDefault: false,
-//     organizationId,
-//     description: 'Full control over organization',
-//     permissions: {
-//       create: [
-//         { type: OrgPermissionType.OWNER },
-//         { type: OrgPermissionType.VIEW_ORG },
-//         { type: OrgPermissionType.EDIT_ORG },
-//         { type: OrgPermissionType.DELETE_ORG },
-        
-//         { type: OrgPermissionType.ONBOARD_USER },
-//         { type: OrgPermissionType.REMOVE_USER },
-//         { type: OrgPermissionType.CHANGE_USER_ROLE },
-
-//         { type: OrgPermissionType.VIEW_WORKSPACE },
-//         { type: OrgPermissionType.CREATE_WORKSPACE },
-//         { type: OrgPermissionType.EDIT_WORKSPACE },
-//         { type: OrgPermissionType.DELETE_WORKSPACE },
-//       ],
-//     },
-//   },
-//   {
-//     name: 'Admin',
-//     isDefault: false,
-//     organizationId,
-//     description: 'Manage users and workspaces',
-//     permissions: {
-//       create: [
-//         { type: OrgPermissionType.VIEW_ORG },
-//         { type: OrgPermissionType.ONBOARD_USER },
-//         { type: OrgPermissionType.REMOVE_USER },
-//         { type: OrgPermissionType.CHANGE_USER_ROLE },
-
-//         { type: OrgPermissionType.VIEW_WORKSPACE },
-//         { type: OrgPermissionType.CREATE_WORKSPACE },
-//         { type: OrgPermissionType.EDIT_WORKSPACE },
-//         { type: OrgPermissionType.DELETE_WORKSPACE },
-//       ],
-//     },
-//   },
-//   {
-//     name: 'Member',
-//     isDefault: false,
-//     organizationId,
-//     description: 'Standard member with limited access',
-//     permissions: {
-//       create: [
-//         { type: OrgPermissionType.VIEW_ORG },
-//         { type: OrgPermissionType.VIEW_WORKSPACE },
-//       ],
-//     },
-//   },
-//   {
-//     name: 'Viewer',
-//     isDefault: true,
-//     organizationId,
-//     description: 'Read-only access to organization',
-//     permissions: {
-//       create: [
-//         { type: OrgPermissionType.VIEW_ORG },
-//         { type: OrgPermissionType.VIEW_WORKSPACE },
-//       ],
-//     },
-//   },
-// ];

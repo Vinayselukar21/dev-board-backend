@@ -17,12 +17,34 @@ export function login(req: Request, res: Response) {
         email: email,
       },
       include: {
-        memberships: true,
+        memberships: {
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
+              },
+            },
+            workspace: true,
+          },
+        },
         organization: true,
         ownedOrganization: {
           include: {
             owner: true,
             users: true,
+          },
+        },
+        organizationRole: {
+          include: {
+            permissions: {
+              include: {
+                permission: true,
+              },
+            },
           },
         },
       },
@@ -39,11 +61,24 @@ export function login(req: Request, res: Response) {
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Invalid password" });
     }
+
+    const orgPermissions = user.organizationRole?.permissions?.map((role) => role.permission.name) || [];
+    const workspacePermissions = user.memberships?.map((membership) => {
+      const workspacePermissions = membership.role?.permissions?.map((role) => role.permission.name) || [];
+      return {
+        workspaceName: membership.workspace.name,
+        workspaceId: membership.workspace.id,
+        permissions: workspacePermissions,
+      };
+    });
+
     const tokens = await generateTokens({
       id: user.id,
       email: user.email,
       name: user.name,
       lastLogin: new Date().toISOString(),
+      orgPermissions,
+      workspacePermissions,
     });
     // save the refresh token to db - task
     return res
@@ -77,6 +112,8 @@ export function login(req: Request, res: Response) {
           organizationId: user.organizationId,
           organization: user.organization,
           ownedOrganization: user.ownedOrganization,
+          orgPermissions,
+          workspacePermissions,
         },
       });
   }
@@ -136,14 +173,40 @@ export async function register(req: Request, res: Response) {
     if (!orgRole) {
       return;
     }
-    await prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: {
         id: user.id,
       },
       data: {
         organizationRoleId: orgRole.id,
       },
+      include: {
+        organizationRole: {
+          include: {
+            permissions: {
+              include: {
+                permission: true,
+              },
+            },
+          },
+        },
+        memberships: {
+          include: {
+            workspace: true,
+            role: {
+              include: {
+                permissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
+    return updatedUser;
   }
 
 
@@ -153,14 +216,27 @@ export async function register(req: Request, res: Response) {
 
       console.log("Seeded organization default roles for organization: 1", organization.id);
       await seedOrganizationDefaultRoles(organization.id);
-      await giveUserOwnerPermission(response, organization.id);
+      const updatedUser = await giveUserOwnerPermission(response, organization.id);
+
+      const orgPermissions = updatedUser?.organizationRole?.permissions?.map((role) => role.permission.name) || [];
+      const workspacePermissions = updatedUser?.memberships?.map((membership) => {
+        const workspacePermissions = membership.role?.permissions?.map((role) => role.permission.name) || [];
+        return {
+          workspaceName: membership.workspace.name,
+          workspaceId: membership.workspace.id,
+          permissions: workspacePermissions,
+        };
+      }) || [];
+
       const tokens = await generateTokens({
         id: response.id,
         email: response.email,
         name: response.name,
         lastLogin: new Date().toISOString(),
+        orgPermissions,
+        workspacePermissions,
       });
-      console.log(response);
+      
       res
         .cookie("access_token", tokens.accessToken, {
           httpOnly: true,
@@ -229,11 +305,59 @@ export async function refresh(req: Request, res: Response) {
       name: string;
       lastLogin: string;
     };
+    const user = await prisma.user.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        memberships: {
+          include: {
+            role: {
+              include: {
+                permissions: {
+                  include: {
+                    permission: true,
+                  },
+                },
+              },
+            },
+            workspace: true,
+          },
+        },
+        organizationRole: {
+          include: {
+            permissions: {
+              include: {
+                permission: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    if (!user) {
+      res.sendStatus(403);
+      return;
+    }
+
+    const orgPermissions = user.organizationRole?.permissions?.map((role) => role.permission.name) || [];
+    const workspacePermissions = user.memberships?.map((membership) => {
+      const workspacePermissions = membership.role?.permissions?.map((role) => role.permission.name) || [];
+      return {
+        workspaceName: membership.workspace.name,
+        workspaceId: membership.workspace.id,
+        permissions: workspacePermissions,
+      };
+    }) || [];
+
+    
     const { accessToken } = await generateTokens({
       id,
       name,
       email,
       lastLogin,
+      orgPermissions,
+      workspacePermissions,
     });
 
     res
