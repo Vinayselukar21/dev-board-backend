@@ -2,9 +2,19 @@ import { CustomRequest } from "../../middlewares/verifyAccessToken";
 import { prisma } from "../../index";
 import log from "../../utils/log";
 import { Response } from "express";
+import { PermissionType } from "../../types";
 
 
 export async function getCalendarEvents(req: CustomRequest, res: Response) {
+
+    const { workspacePermissions } = req.user!;
+
+    const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
+
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.VIEW_EVENT)) {
+      res.status(400).json({ message: "You are not authorized to view calendar events" });
+      return
+    }
     const { workspaceId, workspaceMemberId, month, year } = req.params;
     async function getCalendarEvents() {
       // JS months are 0-based, so month - 1
@@ -45,6 +55,16 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
   }
   
   export async function createCalendarEvent(req: CustomRequest, res: Response) {
+
+    const { workspacePermissions } = req.user!;
+
+    const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
+  
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.CREATE_EVENT)) {
+      res.status(400).json({ message: "You are not authorized to create calendar events" });
+      return
+    }
+
     const { workspaceId } = req.params;
     const {
       title,
@@ -110,6 +130,16 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
   }
   
   export async function createCalendarEventSeries(req: CustomRequest, res: Response) {
+
+    const { workspacePermissions } = req.user!;
+
+    const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
+  
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.CREATE_EVENT)) {
+      res.status(400).json({ message: "You are not authorized to create calendar events" });
+      return
+    }
+
     const { workspaceId } = req.params;
     const { occurrence, participants, seriesTitle, seriesDescription, seriesStartDate, seriesEndDate, repeatEvery, repeatFor } = req.body;
   
@@ -173,6 +203,16 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
   }
   
   // export async function editCalendarEventSeries(req: CustomRequest, res: Response) {
+
+  // const { workspacePermissions } = req.user!;
+
+  //   const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
+  
+  //   if (!workspaceMemberPermissions?.permissions.includes(PermissionType.EDIT_EVENT || PermissionType.EDIT_ANY_EVENT)) {
+  //     res.status(400).json({ message: "You are not authorized to edit calendar events" });
+  //     return
+  //   }
+
   //   const { workspaceId } = req.params;
   //   const { seriesId, seriesTitle, seriesDescription, seriesStartDate, seriesEndDate, repeatEvery, repeatFor } = req.body;
   
@@ -220,6 +260,16 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
   // }
   
   export async function editCalendarEvent(req: CustomRequest, res: Response) {
+
+    const { workspacePermissions } = req.user!;
+
+    const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
+  
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.EDIT_EVENT || PermissionType.EDIT_ANY_EVENT)) {
+      res.status(400).json({ message: "You are not authorized to edit calendar events" });
+      return
+    }
+
     const { workspaceId } = req.params;
     const { id, title, description, date, time, type, endTime, projectId, occurrence, participants, status, location } = req.body;
   
@@ -279,6 +329,16 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
   }
   
   export async function deleteCalendarEvent(req: CustomRequest, res: Response) {
+
+    const { workspacePermissions } = req.user!;
+
+    const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
+  
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.DELETE_EVENT)) {
+      res.status(400).json({ message: "You are not authorized to delete calendar events" });
+      return
+    }
+
     const { workspaceId, eventId } = req.params;
   
     async function deleteCalendarEvent() {
@@ -314,6 +374,15 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
   }
   
   export async function cancelCalendarEvent(req: CustomRequest, res: Response) {
+
+    const { workspacePermissions } = req.user!;
+
+    const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
+  
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.CANCEL_EVENT)) {
+      res.status(400).json({ message: "You are not authorized to cancel calendar events" });
+      return
+    }
     const { workspaceId, eventId } = req.params;
   
     async function cancelCalendarEvent() {

@@ -3,8 +3,19 @@ import { CustomRequest } from "../../middlewares/verifyAccessToken";
 import { prisma } from "../../index";
 import log from "../../utils/log";
 import { Request, Response } from "express";
+import { PermissionType } from "../../types";
 
 export async function createDepartment(req: CustomRequest, res: Response) {
+
+   const { workspacePermissions } = req.user!;
+  
+      const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
+  
+      if (!workspaceMemberPermissions?.permissions.includes(PermissionType.CREATE_DEPARTMENT)) {
+        res.status(400).json({ message: "You are not authorized to create a department" });
+        return
+      }
+
   const { name, workspaceId } = req.body;
   async function createDepartment() {
     const department = await prisma.department.create({

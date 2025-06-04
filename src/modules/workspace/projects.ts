@@ -3,8 +3,17 @@ import { prisma } from "../../index";
 import log from "../../utils/log";
 import { Request, Response } from "express";
 import { CustomRequest } from "../../middlewares/verifyAccessToken";
+import { PermissionType } from "../../types";
 
 export async function createProject(req: CustomRequest, res: Response) {
+   const { workspacePermissions } = req.user!;
+  
+      const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
+  
+      if (!workspaceMemberPermissions?.permissions.includes(PermissionType.CREATE_PROJECT || PermissionType.ALL_PROJECT)) {
+        res.status(400).json({ message: "You are not authorized to create a project" });
+        return
+      }
     const { workspaceId } = req.params;
     const {
       name,
@@ -61,7 +70,15 @@ export async function createProject(req: CustomRequest, res: Response) {
     }
   }
   
-  export async function getWorkspaceProjects(req: Request, res: Response) {
+  export async function getWorkspaceProjects(req: CustomRequest, res: Response) {
+    const { workspacePermissions } = req.user!;
+
+    const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
+
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.VIEW_PROJECT || PermissionType.ALL_PROJECT)) {
+      res.status(400).json({ message: "You are not authorized to view projects" });
+      return
+    }
     const { workspaceId, workspaceMemberId } = req.params;
     async function getWorkspaceProjects() {
       const projects = await prisma.project.findMany({
@@ -91,7 +108,15 @@ export async function createProject(req: CustomRequest, res: Response) {
     }
   }
   
-  export async function getWorkspaceProjectStats(req: Request, res: Response) {
+  export async function getWorkspaceProjectStats(req: CustomRequest, res: Response) {
+    const { workspacePermissions } = req.user!;
+
+    const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
+
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.VIEW_PROJECT || PermissionType.ALL_PROJECT)) {
+      res.status(400).json({ message: "You are not authorized to view projects" });
+      return
+    }
     const { workspaceId, workspaceMemberId } = req.params;
     async function getWorkspaceProjectStats() {
       const projects = await prisma.project.findMany({

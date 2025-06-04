@@ -1,19 +1,21 @@
+import { OrgPermissionType } from "@prisma/client";
 import { Request, Response } from "express";
 import { prisma } from "../index";
-import { PermissionType, Project, Workspace } from "../types";
-import { OrgPermissionType, WorkspaceMember } from "@prisma/client";
-import { hashPassword } from "../utils/hash";
 import { CustomRequest } from "../middlewares/verifyAccessToken";
+import { PermissionType, Workspace } from "../types";
 import log from "../utils/log";
 import { seedWorkspaceDefaultRoles } from "../utils/seed-workspace-default-roles";
 
+// CALENDAR RELATED //-------------------------------------------------------------------------------------
+export { cancelCalendarEvent, createCalendarEvent, createCalendarEventSeries, deleteCalendarEvent, editCalendarEvent, getCalendarEvents } from "../modules/workspace/calendar";
 
-export { getCalendarEvents, createCalendarEvent, createCalendarEventSeries, editCalendarEvent, deleteCalendarEvent, cancelCalendarEvent } from "../modules/workspace/calendar"
+// PROJECT RELATED //-------------------------------------------------------------------------------------
+export { createProject, getWorkspaceProjects, getWorkspaceProjectStats } from "../modules/workspace/projects";
 
-export { createProject, getWorkspaceProjects, getWorkspaceProjectStats } from "../modules/workspace/projects"
+// DEPARTMENT RELATED //-------------------------------------------------------------------------------------
+export { createDepartment, getDepartments } from "../modules/workspace/departments";
 
-export { createDepartment, getDepartments } from "../modules/workspace/departments"
-
+// WORKSPACE RELATED //-------------------------------------------------------------------------------------
 export async function workspaceDashboard(req: Request, res: Response) {
   const { workspaceId } = req.params;
   async function workspaceDashboard() {

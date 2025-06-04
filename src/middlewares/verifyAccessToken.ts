@@ -38,7 +38,7 @@ const verifyAccessToken = (
       process.env.ACCESS_TOKEN_SECRET!
     ) as JwtPayload;
     req.user = decoded;
-    console.log(decoded, "decoded token")
+    // console.log(decoded, "decoded token")
     next();
   } catch (err) {
     console.log(err, "error in verifyAccessToken")

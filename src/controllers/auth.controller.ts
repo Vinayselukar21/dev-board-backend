@@ -1,12 +1,12 @@
+import { User } from "@prisma/client";
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { jwtSecret, prisma } from "../index";
-import { comparePassword, hashPassword } from "../utils/hash";
-import { generateTokens } from "../utils/generateTokens";
-import { accessCookieMaxAge, refreshCookieMaxAge } from "../utils/cookieMaxAge";
-import { Organization, User } from "@prisma/client";
-import { seedOrganizationDefaultRoles } from "../utils/seed-organization-default-roles";
 import { CustomRequest } from "../middlewares/verifyAccessToken";
+import { accessCookieMaxAge, refreshCookieMaxAge } from "../utils/cookieMaxAge";
+import { generateTokens } from "../utils/generateTokens";
+import { comparePassword, hashPassword } from "../utils/hash";
+import { seedOrganizationDefaultRoles } from "../utils/seed-organization-default-roles";
 
 export function login(req: Request, res: Response) {
   const { email, password } = req.body;
