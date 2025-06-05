@@ -2,8 +2,17 @@ import { prisma } from "../../index";
 import log from "../../utils/log";
 import { CustomRequest } from "../../middlewares/verifyAccessToken";
 import { Request, Response } from "express";
+import { PermissionType } from "@prisma/client";
 
 export async function addMemberToProject(req: CustomRequest, res: Response) {
+    const { workspacePermissions } = req.user!;
+    
+    const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
+    
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.ADD_MEMBER)) {
+      res.status(400).json({ message: "You are not authorized to add members to projects" });
+      return
+    }
     const { projectId, memberId } = req.body;
     async function addMember() {
       // Add a member to a project

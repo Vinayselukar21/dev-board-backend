@@ -2,6 +2,7 @@ import { prisma } from "../../index";
 import log from "../../utils/log";
 import { CustomRequest } from "../../middlewares/verifyAccessToken";
 import { Response } from "express";
+import { PermissionType } from "../../types";
 
 export async function createTaskStage(req: CustomRequest, res: Response) {
     const { projectId, name } = req.body;
@@ -40,6 +41,16 @@ export async function createTaskStage(req: CustomRequest, res: Response) {
   }
   
   export async function createTask(req: CustomRequest, res: Response) {
+
+    const { workspacePermissions } = req.user!;
+    
+        const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
+    
+        if (!workspaceMemberPermissions?.permissions.includes(PermissionType.CREATE_TASK || PermissionType.ALL_TASK)) {
+          res.status(400).json({ message: "You are not authorized to create tasks" });
+          return
+        }
+
     const {
       projectId,
       title,
@@ -98,6 +109,16 @@ export async function createTaskStage(req: CustomRequest, res: Response) {
   
   export async function updateTask(req: CustomRequest, res: Response) {
     const { taskId, title, description, status, priority, dueDate, stageId, assignees } = req.body;
+    
+    const { workspacePermissions } = req.user!;
+    
+        const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
+    
+        if (!workspaceMemberPermissions?.permissions.includes(PermissionType.EDIT_ANY_TASK || PermissionType.ALL_TASK)) {
+          res.status(400).json({ message: "You are not authorized to update tasks" });
+          return
+        }
+
     async function updateTask() {
       const task = await prisma.task.update({
         where: {
@@ -145,6 +166,14 @@ export async function createTaskStage(req: CustomRequest, res: Response) {
   }
   
   export async function getAllTasksForProject(req: CustomRequest, res: Response) {
+    const { workspacePermissions } = req.user!;
+    
+    const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
+    
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.VIEW_TASK || PermissionType.ALL_TASK)) {
+      res.status(400).json({ message: "You are not authorized to view tasks" });
+      return
+    }
     const { projectId } = req.params;
     async function tasksByStage() {
       const tasks = await prisma.taskStage.findMany({
@@ -178,6 +207,16 @@ export async function createTaskStage(req: CustomRequest, res: Response) {
   
   export async function changeTaskStage(req: CustomRequest, res: Response) {
     const { taskId, stageId } = req.body;
+    
+    const { workspacePermissions } = req.user!;
+    
+        const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
+    
+        if (!workspaceMemberPermissions?.permissions.includes(PermissionType.EDIT_ANY_TASK || PermissionType.ALL_TASK)) {
+          res.status(400).json({ message: "You are not authorized to update tasks" });
+          return
+        }
+
     async function changeTaskStage() {
       const task = await prisma.task.update({
         where: {
@@ -217,6 +256,15 @@ export async function createTaskStage(req: CustomRequest, res: Response) {
   
   export async function deleteTask(req: CustomRequest, res: Response) {
     const { taskId } = req.params;
+    
+    const { workspacePermissions } = req.user!;
+    
+        const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
+    
+        if (!workspaceMemberPermissions?.permissions.includes(PermissionType.EDIT_ANY_TASK || PermissionType.ALL_TASK)) {
+          res.status(400).json({ message: "You are not authorized to update tasks" });
+          return
+        }
   
     async function deleteTask() {
       const task = await prisma.task.delete({

@@ -19,23 +19,23 @@ const router = Router();
 router.get("/:workspaceId/logs", verifyAccessToken, getProjectLogs);
 
 // Get project details by id 
-router.get("/getbyid/:projectId", verifyAccessToken, getProjectById); // fetch a project by id 
+router.get("/:workspaceId/getbyid/:projectId", verifyAccessToken, getProjectById); // fetch a project by id 
 
 // Project Routes
-router.post("/addmember", verifyAccessToken, addMemberToProject);
+router.post("/:workspaceId/addmember", verifyAccessToken, addMemberToProject);
 router.get("/:id/members", verifyAccessToken, getMembers);
 
 // Project Tasks Stage Routes
 router.post("/newstage", verifyAccessToken, createTaskStage);
 
 // Project Tasks Routes
-router.post("/newtask", verifyAccessToken, createTask);
-router.put("/updatetask", verifyAccessToken, updateTask);
+router.post("/:workspaceId/newtask", verifyAccessToken, createTask);
+router.put("/:workspaceId/updatetask", verifyAccessToken, updateTask);
 
-router.get("/:projectId/tasks", verifyAccessToken, getAllTasksForProject);
-router.put("/taskstagechange", verifyAccessToken, changeTaskStage);
+router.get("/:workspaceId/:projectId/tasks", verifyAccessToken, getAllTasksForProject); // not in use
+router.put("/:workspaceId/taskstagechange", verifyAccessToken, changeTaskStage);
 // router.get("/:id/task/:taskId", verifyAccessToken, getTask);
 // router.put("/:id/task/:taskId", verifyAccessToken, updateTask);
-router.delete("/task/delete/:taskId", verifyAccessToken, deleteTask);
+router.delete("/:workspaceId/task/delete/:taskId", verifyAccessToken, deleteTask);
 
 export default router;
