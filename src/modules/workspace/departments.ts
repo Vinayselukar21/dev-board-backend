@@ -7,16 +7,15 @@ import { PermissionType } from "../../types";
 
 export async function createDepartment(req: CustomRequest, res: Response) {
 
-   const { workspacePermissions } = req.user!;
+  const { workspacePermissions } = req.user!;
+  const { name, workspaceId } = req.body;
   
-      const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
-  
-      if (!workspaceMemberPermissions?.permissions.includes(PermissionType.CREATE_DEPARTMENT)) {
+      const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === workspaceId);
+      if (!workspaceMemberPermissions?.permissions.includes(PermissionType.DEPARTMENT_CREATE)) {
         res.status(400).json({ message: "You are not authorized to create a department" });
         return
       }
 
-  const { name, workspaceId } = req.body;
   async function createDepartment() {
     const department = await prisma.department.create({
       data: {

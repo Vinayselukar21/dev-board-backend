@@ -77,8 +77,6 @@ export function login(req: Request, res: Response) {
       email: user.email,
       name: user.name,
       lastLogin: new Date().toISOString(),
-      orgPermissions,
-      workspacePermissions,
     });
     // save the refresh token to db - task
     return res
@@ -233,8 +231,6 @@ export async function register(req: Request, res: Response) {
         email: response.email,
         name: response.name,
         lastLogin: new Date().toISOString(),
-        orgPermissions,
-        workspacePermissions,
       });
       
       res
@@ -356,8 +352,6 @@ export async function refresh(req: Request, res: Response) {
       name,
       email,
       lastLogin,
-      orgPermissions,
-      workspacePermissions,
     });
 
     res

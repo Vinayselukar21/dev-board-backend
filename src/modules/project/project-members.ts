@@ -9,7 +9,7 @@ export async function addMemberToProject(req: CustomRequest, res: Response) {
     
     const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
     
-    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.ADD_MEMBER)) {
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.MEMBER_ADD)) {
       res.status(400).json({ message: "You are not authorized to add members to projects" });
       return
     }

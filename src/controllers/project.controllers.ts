@@ -4,16 +4,16 @@ import { CustomRequest } from "../middlewares/verifyAccessToken";
 import { PermissionType } from "../types";
 // PROJECT ----------------------------------------------------------------------------------------------
 export async function getProjectById(req: CustomRequest, res: Response) {
-  const {workspaceId, projectId } = req.params;
+  const { workspaceId, projectId } = req.params;
 
   const { workspacePermissions } = req.user!;
-  
-      const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === workspaceId);
-  
-      if (!workspaceMemberPermissions?.permissions.includes(PermissionType.VIEW_PROJECT || PermissionType.ALL_PROJECT)) {
-        res.status(400).json({ message: "You are not authorized to view projects" });
-        return
-      }
+
+  const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === workspaceId);
+
+  if (!workspaceMemberPermissions?.permissions.includes(PermissionType.PROJECT_VIEW)) {
+    res.status(400).json({ message: "You are not authorized to view projects" });
+    return
+  }
 
   async function getProjectById() {
     const project = await prisma.project.findUnique({
@@ -63,13 +63,13 @@ export async function getProjectLogs(req: CustomRequest, res: Response) {
   const { workspaceId } = req.params;
 
   const { workspacePermissions } = req.user!;
-  
-      const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === workspaceId);
-  
-      if (!workspaceMemberPermissions?.permissions.includes(PermissionType.VIEW_PROJECT || PermissionType.ALL_PROJECT)) {
-        res.status(400).json({ message: "You are not authorized to view projects" });
-        return
-      }
+
+  const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === workspaceId);
+
+  if (!workspaceMemberPermissions?.permissions.includes(PermissionType.PROJECT_VIEW)) {
+    res.status(400).json({ message: "You are not authorized to view projects" });
+    return
+  }
 
   async function getProjectLogs() {
     const logs = await prisma.log.findMany({

@@ -49,32 +49,35 @@ async function AddWorkspacePermissions(organizationId: string) {
   }
 
   const permissionTypes = [
-    PermissionType.ADD_MEMBER,
-    PermissionType.ALL_PROJECT,
-    PermissionType.ALL_TASK,
-    PermissionType.CHANGE_MEMBER_ROLE,
-    PermissionType.CREATE_EVENT,
-    PermissionType.CREATE_PROJECT,
-    PermissionType.CREATE_TASK,
-    PermissionType.DELETE_EVENT,
-    PermissionType.DELETE_PROJECT,
-    PermissionType.DELETE_TASK,
-    PermissionType.EDIT_ANY_EVENT,
-    PermissionType.EDIT_ANY_TASK,
-    PermissionType.EDIT_EVENT,
-    PermissionType.EDIT_PROJECT,
-    PermissionType.REMOVE_MEMBER,
-    PermissionType.VIEW_PROJECT,
-    PermissionType.VIEW_TASK,
-    PermissionType.CREATE_CUSTOM_WORKSPACE_ROLE,
-    PermissionType.EDIT_CUSTOM_WORKSPACE_ROLE,
-    PermissionType.DELETE_CUSTOM_WORKSPACE_ROLE,
-    PermissionType.EDIT_EVENT,
-    PermissionType.VIEW_EVENT,
-    PermissionType.CANCEL_EVENT,
-    PermissionType.CREATE_DEPARTMENT,
-    PermissionType.EDIT_DEPARTMENT,
-    PermissionType.DELETE_DEPARTMENT,
+    PermissionType.PROJECT_VIEW,
+    PermissionType.PROJECT_CREATE,
+    PermissionType.PROJECT_EDIT,
+    PermissionType.PROJECT_DELETE,
+
+    PermissionType.TASK_VIEW,
+    PermissionType.TASK_CREATE,
+    PermissionType.TASK_EDIT,
+    PermissionType.TASK_DELETE,
+
+    PermissionType.MEMBER_ADD,
+    PermissionType.MEMBER_REMOVE,
+    PermissionType.MEMBER_CHANGE_ROLE,
+
+    PermissionType.EVENT_VIEW,
+    PermissionType.EVENT_CREATE,
+    PermissionType.EVENT_EDIT,
+    PermissionType.EVENT_EDIT_ANY,
+    PermissionType.EVENT_CANCEL,
+    PermissionType.EVENT_DELETE,
+
+    PermissionType.ROLE_WORKSPACE_CREATE,
+    PermissionType.ROLE_WORKSPACE_EDIT,
+    PermissionType.ROLE_WORKSPACE_DELETE,
+
+    PermissionType.DEPARTMENT_VIEW,
+    PermissionType.DEPARTMENT_CREATE,
+    PermissionType.DEPARTMENT_EDIT,
+    PermissionType.DEPARTMENT_DELETE,
   ];
 
   await prisma.workspacePermission.createMany({
@@ -100,10 +103,85 @@ async function mapPermissionWithRoles(workspaceId: string, organizationId: strin
   })
 
   const roleMap = {
-    owner: ['ALL_PROJECT', 'ALL_TASK', 'CHANGE_MEMBER_ROLE', 'CREATE_EVENT', 'CREATE_PROJECT', 'CREATE_TASK', 'DELETE_EVENT', 'DELETE_PROJECT', 'DELETE_TASK', 'EDIT_ANY_EVENT', 'EDIT_ANY_TASK', 'EDIT_EVENT', 'EDIT_PROJECT', 'ADD_MEMBER', 'REMOVE_MEMBER', 'VIEW_PROJECT', 'VIEW_TASK', 'CREATE_CUSTOM_WORKSPACE_ROLE', 'EDIT_CUSTOM_WORKSPACE_ROLE', 'DELETE_CUSTOM_WORKSPACE_ROLE', 'CANCEL_EVENT', 'VIEW_EVENT', 'CREATE_DEPARTMENT', 'EDIT_DEPARTMENT', 'DELETE_DEPARTMENT'],
-    admin: ['ALL_PROJECT', 'ALL_TASK', 'CHANGE_MEMBER_ROLE', 'CREATE_EVENT', 'CREATE_PROJECT', 'CREATE_TASK', 'DELETE_EVENT', 'DELETE_PROJECT', 'DELETE_TASK', 'EDIT_ANY_EVENT', 'EDIT_ANY_TASK', 'EDIT_EVENT', 'EDIT_PROJECT', 'ADD_MEMBER', 'REMOVE_MEMBER', 'VIEW_PROJECT', 'VIEW_TASK', 'CREATE_CUSTOM_WORKSPACE_ROLE', 'EDIT_CUSTOM_WORKSPACE_ROLE', 'DELETE_CUSTOM_WORKSPACE_ROLE', 'CANCEL_EVENT', 'VIEW_EVENT', 'CREATE_DEPARTMENT', 'EDIT_DEPARTMENT', 'DELETE_DEPARTMENT'],
-    member: ['VIEW_PROJECT', 'VIEW_TASK', 'VIEW_EVENT'],
-    viewer: ['VIEW_PROJECT', 'VIEW_TASK', 'VIEW_EVENT'],
+    owner: [
+      "PROJECT_VIEW",
+      "PROJECT_CREATE",
+      "PROJECT_EDIT",
+      "PROJECT_DELETE",
+
+      "TASK_VIEW",
+      "TASK_CREATE",
+      "TASK_EDIT",
+      "TASK_DELETE",
+
+      "MEMBER_ADD",
+      "MEMBER_REMOVE",
+      "MEMBER_CHANGE_ROLE",
+
+      "EVENT_VIEW",
+      "EVENT_CREATE",
+      "EVENT_EDIT",
+      "EVENT_EDIT_ANY",
+      "EVENT_CANCEL",
+      "EVENT_DELETE",
+
+      "ROLE_WORKSPACE_CREATE",
+      "ROLE_WORKSPACE_EDIT",
+      "ROLE_WORKSPACE_DELETE",
+
+      "DEPARTMENT_VIEW",
+      "DEPARTMENT_CREATE",
+      "DEPARTMENT_EDIT",
+      "DEPARTMENT_DELETE",
+    ],
+    admin: [
+      "PROJECT_VIEW",
+      "PROJECT_CREATE",
+      "PROJECT_EDIT",
+
+      "TASK_VIEW",
+      "TASK_CREATE",
+      "TASK_EDIT",
+      "TASK_DELETE",
+
+      "MEMBER_ADD",
+      "MEMBER_REMOVE",
+      "MEMBER_CHANGE_ROLE",
+
+      "EVENT_VIEW",
+      "EVENT_CREATE",
+      "EVENT_EDIT",
+      "EVENT_EDIT_ANY",
+      "EVENT_CANCEL",
+      "EVENT_DELETE",
+
+      "ROLE_WORKSPACE_CREATE",
+      "ROLE_WORKSPACE_EDIT",
+      "ROLE_WORKSPACE_DELETE",
+
+      "DEPARTMENT_VIEW",
+    ],
+    member: [
+      "PROJECT_VIEW",
+
+      "TASK_VIEW",
+      "TASK_CREATE",
+      "TASK_EDIT",
+      "TASK_DELETE",
+
+      "EVENT_VIEW",
+      "EVENT_CREATE",
+      "EVENT_EDIT",
+      "EVENT_CANCEL",
+
+      "DEPARTMENT_VIEW",
+    ],
+    viewer: [
+      "PROJECT_VIEW",
+      "TASK_VIEW",
+      "EVENT_VIEW",
+      "DEPARTMENT_VIEW",
+    ],
   }
 
   const ownerPermissions = permissions.filter(p => roleMap.owner.includes(p.name)).map(p => {

@@ -1,4 +1,4 @@
-import { OrgPermissionType } from '@prisma/client';
+import { OrgPermissionType } from '../types';
 import { prisma } from "../index";
 
 async function addOrgRoles( organizationId: string) {
@@ -51,19 +51,19 @@ async function addOrgPermissions(organizationId: string) {
 
     const permissionTypes = [
       OrgPermissionType.OWNER,
-      OrgPermissionType.VIEW_ORG,
-      OrgPermissionType.EDIT_ORG,
-      OrgPermissionType.DELETE_ORG,
-      OrgPermissionType.ONBOARD_USER,
-      OrgPermissionType.REMOVE_USER,
-      OrgPermissionType.CHANGE_USER_ROLE,
-      OrgPermissionType.VIEW_WORKSPACE,
-      OrgPermissionType.CREATE_WORKSPACE,
-      OrgPermissionType.EDIT_WORKSPACE,
-      OrgPermissionType.DELETE_WORKSPACE,
-      OrgPermissionType.CREATE_CUSTOM_ORG_ROLE,
-      OrgPermissionType.EDIT_CUSTOM_ORG_ROLE,
-      OrgPermissionType.DELETE_CUSTOM_ORG_ROLE
+      OrgPermissionType.ORG_VIEW,
+      OrgPermissionType.ORG_EDIT,
+      OrgPermissionType.ORG_DELETE,
+      OrgPermissionType.ORG_ONBOARD_USER,
+      OrgPermissionType.ORG_REMOVE_USER,
+      OrgPermissionType.ORG_CHANGE_USER_ROLE,
+      OrgPermissionType.ORG_WORKSPACE_VIEW,
+      OrgPermissionType.ORG_WORKSPACE_CREATE,
+      OrgPermissionType.ORG_WORKSPACE_EDIT,
+      OrgPermissionType.ORG_WORKSPACE_DELETE,
+      OrgPermissionType.ORG_CUSTOM_ROLE_CREATE,
+      OrgPermissionType.ORG_CUSTOM_ROLE_EDIT,
+      OrgPermissionType.ORG_CUSTOM_ROLE_DELETE
     ];
   
     const permissions = await prisma.orgPermission.createMany({
@@ -91,10 +91,43 @@ async function mapPermissionWithRoles(organizationId: string) {
   })
 
   const roleMap = {
-    owner:  ['OWNER', 'VIEW_ORG','EDIT_ORG','DELETE_ORG','ONBOARD_USER','REMOVE_USER','CHANGE_USER_ROLE','VIEW_WORKSPACE','CREATE_WORKSPACE','EDIT_WORKSPACE','DELETE_WORKSPACE','CREATE_CUSTOM_ORG_ROLE','EDIT_CUSTOM_ORG_ROLE','DELETE_CUSTOM_ORG_ROLE'],
-    admin:  ['VIEW_ORG','ONBOARD_USER','REMOVE_USER','CHANGE_USER_ROLE','VIEW_WORKSPACE','CREATE_WORKSPACE','EDIT_WORKSPACE','DELETE_WORKSPACE','CREATE_CUSTOM_ORG_ROLE','EDIT_CUSTOM_ORG_ROLE','DELETE_CUSTOM_ORG_ROLE'],
-    member: ['VIEW_ORG','VIEW_WORKSPACE'],
-    viewer: ['VIEW_ORG','VIEW_WORKSPACE'],
+    owner:  [
+      "OWNER",
+
+      "ORG_VIEW",
+      "ORG_EDIT",
+      "ORG_DELETE",
+    
+      "ORG_ONBOARD_USER",
+      "ORG_REMOVE_USER",
+      "ORG_CHANGE_USER_ROLE",
+    
+      "ORG_WORKSPACE_VIEW",
+      "ORG_WORKSPACE_CREATE",
+      "ORG_WORKSPACE_EDIT",
+      "ORG_WORKSPACE_DELETE",
+    
+      "ORG_CUSTOM_ROLE_CREATE",
+      "ORG_CUSTOM_ROLE_EDIT",
+      "ORG_CUSTOM_ROLE_DELETE",
+    ],
+    admin:  [
+      "ORG_VIEW",
+      "ORG_WORKSPACE_VIEW",
+      "ORG_WORKSPACE_CREATE",
+      "ORG_WORKSPACE_EDIT",
+      "ORG_CUSTOM_ROLE_CREATE",
+      "ORG_CUSTOM_ROLE_EDIT",
+      "ORG_CUSTOM_ROLE_DELETE",
+    ],
+    member: [
+      "ORG_VIEW",
+      "ORG_WORKSPACE_VIEW",
+    ],
+    viewer: [
+      "ORG_VIEW",
+      "ORG_WORKSPACE_VIEW",
+    ],
   }
 
     const ownerPermissions = permissions.filter(p => roleMap.owner.includes(p.name)).map(p => {

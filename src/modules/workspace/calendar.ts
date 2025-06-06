@@ -11,7 +11,7 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
 
     const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
 
-    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.VIEW_EVENT)) {
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.EVENT_VIEW)) {
       res.status(400).json({ message: "You are not authorized to view calendar events" });
       return
     }
@@ -60,7 +60,7 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
 
     const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
   
-    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.CREATE_EVENT)) {
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.EVENT_CREATE)) {
       res.status(400).json({ message: "You are not authorized to create calendar events" });
       return
     }
@@ -135,7 +135,7 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
 
     const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
   
-    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.CREATE_EVENT)) {
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.EVENT_CREATE)) {
       res.status(400).json({ message: "You are not authorized to create calendar events" });
       return
     }
@@ -265,7 +265,7 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
 
     const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
   
-    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.EDIT_EVENT || PermissionType.EDIT_ANY_EVENT)) {
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.EVENT_EDIT)) {
       res.status(400).json({ message: "You are not authorized to edit calendar events" });
       return
     }
@@ -334,7 +334,7 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
 
     const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
   
-    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.DELETE_EVENT)) {
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.EVENT_DELETE)) {
       res.status(400).json({ message: "You are not authorized to delete calendar events" });
       return
     }
@@ -379,7 +379,7 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
 
     const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
   
-    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.CANCEL_EVENT)) {
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.EVENT_CANCEL)) {
       res.status(400).json({ message: "You are not authorized to cancel calendar events" });
       return
     }

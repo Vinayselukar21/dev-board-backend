@@ -149,7 +149,7 @@ export async function createWorkspace(req: CustomRequest, res: Response) {
 
   const { orgPermissions } = req.user!
 
-  if (!orgPermissions.includes(OrgPermissionType.CREATE_WORKSPACE)) {
+  if (!orgPermissions.includes(OrgPermissionType.ORG_WORKSPACE_CREATE)) {
     res.status(400).json({ message: "You are not authorized to create a workspace" });
     return
   }
@@ -226,7 +226,7 @@ export async function updateWorkspace(req: CustomRequest, res: Response) {
 
   const { orgPermissions } = req.user!
 
-  if (!orgPermissions.includes(OrgPermissionType.EDIT_WORKSPACE)) {
+  if (!orgPermissions.includes(OrgPermissionType.ORG_WORKSPACE_EDIT)) {
     res.status(400).json({ message: "You are not authorized to update a workspace" });
     return
   }
@@ -238,7 +238,7 @@ export async function deleteWorkspace(req: CustomRequest, res: Response) {
 
   const { orgPermissions } = req.user!
 
-  if (!orgPermissions.includes(OrgPermissionType.DELETE_WORKSPACE)) {
+  if (!orgPermissions.includes(OrgPermissionType.ORG_WORKSPACE_DELETE)) {
     res.status(400).json({ message: "You are not authorized to delete a workspace" });
     return
   }
@@ -250,7 +250,7 @@ export async function getWorkspaces(req: CustomRequest, res: Response) {
 
   const { orgPermissions } = req.user!
 
-  if (!orgPermissions.includes(OrgPermissionType.VIEW_WORKSPACE)) {
+  if (!orgPermissions.includes(OrgPermissionType.ORG_WORKSPACE_VIEW)) {
     res.status(400).json({ message: "You are not authorized to view workspaces" });
     return
   }
@@ -296,7 +296,7 @@ export async function getWorkspaceById(req: CustomRequest, res: Response) {
 
   const { orgPermissions } = req.user!
 
-  if (!orgPermissions.includes(OrgPermissionType.VIEW_WORKSPACE)) {
+  if (!orgPermissions.includes(OrgPermissionType.ORG_WORKSPACE_VIEW)) {
     res.status(400).json({ message: "You are not authorized to view workspaces" });
     return
   }
@@ -374,7 +374,7 @@ export async function addWorkspaceMember(req: CustomRequest, res: Response) {
 
   const currentWorkspaceRole = workspacePermissions.find((permission) => permission.workspaceId === workspaceId)
 
-  if (!currentWorkspaceRole?.permissions.includes(PermissionType.ADD_MEMBER)) {
+  if (!currentWorkspaceRole?.permissions.includes(PermissionType.MEMBER_ADD)) {
     res.status(400).json({ message: "You are not authorized to add a member to this workspace" });
     return
   }
@@ -498,7 +498,7 @@ export async function createCustomWorkspaceRole(req: CustomRequest, res: Respons
 
   const currentWorkspaceRole = workspacePermissions.find((permission) => permission.workspaceId === workspaceId)
 
-  if (!currentWorkspaceRole?.permissions.includes(PermissionType.CREATE_CUSTOM_WORKSPACE_ROLE)) {
+  if (!currentWorkspaceRole?.permissions.includes(PermissionType.ROLE_WORKSPACE_CREATE)) {
     res.status(400).json({ message: "You are not authorized to create a custom workspace role" });
     return
   }

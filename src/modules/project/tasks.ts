@@ -46,7 +46,7 @@ export async function createTaskStage(req: CustomRequest, res: Response) {
     
         const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
     
-        if (!workspaceMemberPermissions?.permissions.includes(PermissionType.CREATE_TASK || PermissionType.ALL_TASK)) {
+        if (!workspaceMemberPermissions?.permissions.includes(PermissionType.TASK_CREATE)) {
           res.status(400).json({ message: "You are not authorized to create tasks" });
           return
         }
@@ -114,7 +114,7 @@ export async function createTaskStage(req: CustomRequest, res: Response) {
     
         const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
     
-        if (!workspaceMemberPermissions?.permissions.includes(PermissionType.EDIT_ANY_TASK || PermissionType.ALL_TASK)) {
+        if (!workspaceMemberPermissions?.permissions.includes(PermissionType.TASK_EDIT)) {
           res.status(400).json({ message: "You are not authorized to update tasks" });
           return
         }
@@ -170,7 +170,7 @@ export async function createTaskStage(req: CustomRequest, res: Response) {
     
     const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
     
-    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.VIEW_TASK || PermissionType.ALL_TASK)) {
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.TASK_VIEW)) {
       res.status(400).json({ message: "You are not authorized to view tasks" });
       return
     }
@@ -212,7 +212,7 @@ export async function createTaskStage(req: CustomRequest, res: Response) {
     
         const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
     
-        if (!workspaceMemberPermissions?.permissions.includes(PermissionType.EDIT_ANY_TASK || PermissionType.ALL_TASK)) {
+        if (!workspaceMemberPermissions?.permissions.includes(PermissionType.TASK_EDIT)) {
           res.status(400).json({ message: "You are not authorized to update tasks" });
           return
         }
@@ -261,8 +261,8 @@ export async function createTaskStage(req: CustomRequest, res: Response) {
     
         const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
     
-        if (!workspaceMemberPermissions?.permissions.includes(PermissionType.EDIT_ANY_TASK || PermissionType.ALL_TASK)) {
-          res.status(400).json({ message: "You are not authorized to update tasks" });
+        if (!workspaceMemberPermissions?.permissions.includes(PermissionType.TASK_DELETE)) {
+          res.status(400).json({ message: "You are not authorized to delete tasks" });
           return
         }
   

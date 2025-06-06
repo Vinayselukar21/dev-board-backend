@@ -10,7 +10,7 @@ export async function createProject(req: CustomRequest, res: Response) {
   
       const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
   
-      if (!workspaceMemberPermissions?.permissions.includes(PermissionType.CREATE_PROJECT || PermissionType.ALL_PROJECT)) {
+      if (!workspaceMemberPermissions?.permissions.includes(PermissionType.PROJECT_CREATE)) {
         res.status(400).json({ message: "You are not authorized to create a project" });
         return
       }
@@ -75,7 +75,7 @@ export async function createProject(req: CustomRequest, res: Response) {
 
     const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
 
-    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.VIEW_PROJECT || PermissionType.ALL_PROJECT)) {
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.PROJECT_VIEW)) {
       res.status(400).json({ message: "You are not authorized to view projects" });
       return
     }
@@ -113,7 +113,7 @@ export async function createProject(req: CustomRequest, res: Response) {
 
     const workspaceMemberPermissions = workspacePermissions.find((permission) => permission.workspaceId === req.params.workspaceId);
 
-    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.VIEW_PROJECT || PermissionType.ALL_PROJECT)) {
+    if (!workspaceMemberPermissions?.permissions.includes(PermissionType.PROJECT_VIEW)) {
       res.status(400).json({ message: "You are not authorized to view projects" });
       return
     }
