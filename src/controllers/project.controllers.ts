@@ -49,12 +49,13 @@ export async function getProjectById(req: CustomRequest, res: Response) {
     const project = await getProjectById();
     res.status(200).json({
       message: "Project found successfully",
-      project,
+      data:project,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       message: "Failed to get project by id",
+      error: error || "Something went wrong",
     });
   }
 }
@@ -91,12 +92,13 @@ export async function getProjectLogs(req: CustomRequest, res: Response) {
     const logs = await getProjectLogs();
     res.status(200).json({
       message: "Logs found successfully",
-      logs,
+      data:logs,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       message: "Failed to get project logs",
+      error: error || "Something went wrong",
     });
   }
 }

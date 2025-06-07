@@ -44,12 +44,13 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
       const calendarEvents = await getCalendarEvents();
       res.status(200).json({
         message: "Calendar events found successfully",
-        calendarEvents,
+        data:calendarEvents,
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         message: "Failed to get calendar events",
+        error: error || "Something went wrong",
       });
     }
   }
@@ -118,13 +119,13 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
       );
       res.status(200).json({
         message: "Calendar event created successfully",
-        calendarEvent,
+        data:calendarEvent,
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         message: "Failed to create calendar event",
-        error,
+        error: error || "Something went wrong",
       });
     }
   }
@@ -192,12 +193,13 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
       await createCalendarEvents(calendarEventSeries.id);
       res.status(200).json({
         message: "Calendar event series created successfully",
+        data:calendarEventSeries,
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         message: "Failed to create calendar event series",
-        error,
+        error: error || "Something went wrong",
       });
     }
   }
@@ -316,13 +318,13 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
       );
       res.status(200).json({
         message: "Calendar event edited successfully",
-        calendarEvent,
+        data:calendarEvent,
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         message: "Failed to edit calendar event",
-        error,
+        error: error || "Something went wrong",
       });
     }
   
@@ -362,13 +364,13 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
       );
       res.status(200).json({
         message: "Calendar event deleted successfully",
-        calendarEvent,
+        data:calendarEvent,
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         message: "Failed to delete calendar event",
-        error,
+        error: error || "Something went wrong",
       });
     }
   }
@@ -409,13 +411,13 @@ export async function getCalendarEvents(req: CustomRequest, res: Response) {
       );
       res.status(200).json({
         message: "Calendar event cancelled successfully",
-        calendarEvent,
+        data:calendarEvent,
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         message: "Failed to cancel calendar event",
-        error,
+        error: error || "Something went wrong",
       });
     }
   }

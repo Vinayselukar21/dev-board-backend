@@ -82,11 +82,11 @@ export async function getMyOrganization(req: CustomRequest, res: Response) {
         }
         res.status(200).json({
             message: "Organization found successfully",
-            organization,
+            data:organization,
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Internal server error", error: error || "Something went wrong" });
         return
     }
 }
@@ -118,11 +118,11 @@ export async function createOrganization(req: CustomRequest, res: Response) {
 
         res.status(200).json({
             message: "Organization created successfully",
-            organization,
+            data:organization,
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Internal server error", error: error || "Something went wrong" });
         return
     }
 }
@@ -196,12 +196,13 @@ export async function registerAndAddMember(req: CustomRequest, res: Response) {
         );
         res.status(200).json({
             message: "User registered and added to workspace successfully",
-            user,
+            data:user,
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({
             message: "Failed to register and add user to workspace",
+            error: error || "Something went wrong",
         });
     }
 }
@@ -252,14 +253,16 @@ export async function getAllRoles(req: CustomRequest, res: Response) {
 
         res.status(200).json({
             message: "Roles found successfully",
-            workspaceRoles,
-            organizationRoles,
-            orgPermissions,
-            workspacePermissions,
+            data:{
+                workspaceRoles,
+                organizationRoles,
+                orgPermissions,
+                workspacePermissions,
+            }
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Internal server error", error: error || "Something went wrong" });
         return
     }
 }
@@ -289,11 +292,11 @@ export async function createCustomRole(req: CustomRequest, res: Response) {
         });
         res.status(200).json({
             message: "Role created successfully",
-            role,
+            data:role,
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Internal server error", error: error || "Something went wrong" });
         return
     }
 }
@@ -331,11 +334,11 @@ export async function updateRole(req: CustomRequest, res: Response) {
         });
         res.status(200).json({
             message: "Role updated successfully",
-            role,
+            data:role,
         });
     } catch (error) {
         console.error(error);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Internal server error", error: error || "Something went wrong" });
         return
     }
 }

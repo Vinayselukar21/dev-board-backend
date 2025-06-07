@@ -493,7 +493,7 @@ export async function meAll(req: Request, res: Response) {
     }
     res.status(200).json({
       message: "User found",
-      user: {
+      data: {
         email: user.email,
         name: user.name,
         id: user.id,

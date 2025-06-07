@@ -40,12 +40,13 @@ export async function createDepartment(req: CustomRequest, res: Response) {
     );
     res.status(200).json({
       message: "Department created successfully",
-      department,
+      data:department,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       message: "Failed to create department",
+      error: error || "Something went wrong",
     });
   }
 }
@@ -65,12 +66,13 @@ export async function getDepartments(req: Request, res: Response) {
     const departments = await getDepartments();
     res.status(200).json({
       message: "Departments found successfully",
-      departments,
+      data:departments,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       message: "Failed to get departments",
+      error: error || "Something went wrong",
     });
   }
 }

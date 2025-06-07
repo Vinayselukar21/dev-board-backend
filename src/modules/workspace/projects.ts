@@ -60,12 +60,13 @@ export async function createProject(req: CustomRequest, res: Response) {
       );
       res.status(200).json({
         message: "Project created successfully",
-        project,
+        data:project,
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         message: "Failed to create project",
+        error: error || "Something went wrong",
       });
     }
   }
@@ -98,12 +99,13 @@ export async function createProject(req: CustomRequest, res: Response) {
       const projects = await getWorkspaceProjects();
       res.status(200).json({
         message: "Projects found successfully",
-        projects,
+        data:projects,
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         message: "Failed to get workspace projects",
+        error: error || "Something went wrong",
       });
     }
   }
@@ -158,12 +160,13 @@ export async function createProject(req: CustomRequest, res: Response) {
       }, {} as Record<string, any>) : [];
       res.status(200).json({
         message: "Project stats found successfully",
-        statsMap,
+        data:statsMap,
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         message: "Failed to get workspace project stats",
+        error: error || "Something went wrong",
       });
     }
   }

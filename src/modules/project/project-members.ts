@@ -44,12 +44,12 @@ export async function addMemberToProject(req: CustomRequest, res: Response) {
         );
         res.status(200).json({
           message: "Member added to project successfully",
-          response,
+          data:response,
         });
       })
       .catch(async (e) => {
         console.error(e);
-        res.status(500).json({ message: "Failed to add member to project" });
+        res.status(500).json({ message: "Failed to add member to project", error: e || "Something went wrong" });
         return;
       });
   }
@@ -57,6 +57,7 @@ export async function addMemberToProject(req: CustomRequest, res: Response) {
   export async function getMembers(req: Request, res: Response) {
     res.status(200).json({
       message: "Members found successfully",
+      // data:members,
     });
   }
   

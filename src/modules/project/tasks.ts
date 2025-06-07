@@ -30,12 +30,13 @@ export async function createTaskStage(req: CustomRequest, res: Response) {
       );
       res.status(200).json({
         message: "Task stage created successfully",
-        taskStage,
+        data:taskStage,
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         message: "Failed to create task stage",
+        error: error || "Something went wrong",
       });
     }
   }
@@ -97,12 +98,13 @@ export async function createTaskStage(req: CustomRequest, res: Response) {
       );
       res.status(200).json({
         message: "Task created successfully",
-        task,
+        data:task,
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         message: "Failed to create task",
+        error: error || "Something went wrong",
       });
     }
   }
@@ -155,12 +157,13 @@ export async function createTaskStage(req: CustomRequest, res: Response) {
       );
       res.status(200).json({
         message: "Task updated successfully",
-        task,
+        data:task,
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         message: "Failed to update task",
+        error: error || "Something went wrong",
       });
     }
   }
@@ -195,12 +198,13 @@ export async function createTaskStage(req: CustomRequest, res: Response) {
       const tasks = await tasksByStage();
       res.status(200).json({
         message: "Tasks found successfully",
-        tasks,
+        data:tasks,
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         message: "Failed to get tasks by stage",
+        error: error || "Something went wrong",
       });
     }
   }
@@ -244,12 +248,13 @@ export async function createTaskStage(req: CustomRequest, res: Response) {
       );
       res.status(200).json({
         message: "Task stage changed successfully",
-        task,
+        data:task,
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         message: "Failed to change task stage",
+        error: error || "Something went wrong",
       });
     }
   }
@@ -289,12 +294,13 @@ export async function createTaskStage(req: CustomRequest, res: Response) {
       );
       res.status(200).json({
         message: "Task deleted successfully",
-        task,
+        data:task,
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({
         message: "Failed to delete task",
+        error: error || "Something went wrong",
       });
     }
   }

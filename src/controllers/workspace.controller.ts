@@ -128,19 +128,22 @@ export async function workspaceDashboard(req: Request, res: Response) {
           : []
         : [],
 
-      taskDistributionCard: {},
+      taskDistributionCard: null,
 
       logsCard: workspace?.logs,
     };
     res.status(200).json({
       message: "Workspace dashboard found successfully",
-      dashboard: dashboardObject,
-      workspace,
+      data:{
+        dashboard: dashboardObject,
+        workspace,
+      }
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       message: "Failed to get workspace dashboard",
+      error: error || "Something went wrong",
     });
   }
 }
@@ -212,12 +215,13 @@ export async function createWorkspace(req: CustomRequest, res: Response) {
     );
     res.status(200).json({
       message: "Workspace created successfully",
-      workspace,
+      data:workspace,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       message: "Failed to create workspace",
+      error: error || "Something went wrong",
     });
   }
 }
@@ -282,12 +286,13 @@ export async function getWorkspaces(req: CustomRequest, res: Response) {
     const workspaces = await getWorkspaces();
     res.status(200).json({
       message: "Workspaces found successfully",
-      workspaces,
+      data:workspaces,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       message: "Failed to get user workspaces",
+      error: error || "Something went wrong",
     });
   }
 }
@@ -357,12 +362,13 @@ export async function getWorkspaceById(req: CustomRequest, res: Response) {
     const workspace = await getWorkspaceById();
     res.status(200).json({
       message: "Workspace found successfully",
-      workspace,
+      data:workspace,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       message: "Failed to get workspace by id",
+      error: error || "Something went wrong",
     });
   }
 }
@@ -418,12 +424,13 @@ export async function addWorkspaceMember(req: CustomRequest, res: Response) {
     );
     res.status(200).json({
       message: "Workspace member added successfully",
-      workspaceMember,
+      data:workspaceMember,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       message: "Failed to add workspace member",
+      error: error || "Something went wrong",
     });
   }
 }
@@ -454,12 +461,13 @@ export async function getWorkspaceMembers(req: Request, res: Response) {
     // const memberDetails = await getMemeberDetails(members);
     res.status(200).json({
       message: "Members found successfully",
-      members,
+      data:members,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       message: "Failed to get workspace members",
+      error: error || "Something went wrong",
     });
   }
 }
@@ -482,12 +490,13 @@ export async function getWorkspaceSettings(req: CustomRequest, res: Response) {
     // const workspaceSettings = await getWorkspaceSettings();
     res.status(200).json({
       message: "Workspace settings found successfully",
-      // workspaceSettings,
+      // data:workspaceSettings,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({
       message: "Failed to get workspace settings",
+      error: error || "Something went wrong",
     });
   }
 }
@@ -521,11 +530,11 @@ export async function createCustomWorkspaceRole(req: CustomRequest, res: Respons
     });
     res.status(200).json({
       message: "Role created successfully",
-      role,
+      data:role,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error", error: error || "Something went wrong" });
     return
   }
 }
