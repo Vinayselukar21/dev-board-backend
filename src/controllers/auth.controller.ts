@@ -558,7 +558,7 @@ export async function resetPassword(req: CustomRequest, res: Response) {
     return;
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Failed to reset password" });
+    res.status(500).json({ message: "Failed to reset password", error: error || "Something went wrong" });
     return;
   }
 
